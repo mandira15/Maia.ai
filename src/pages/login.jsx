@@ -1,8 +1,9 @@
 import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import api from "../api/api";
 
-function login() {
+function Login() {
 
     const navigate = useNavigate();
 
@@ -18,12 +19,35 @@ function login() {
         });
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
+
         e.preventDefault();
 
-        // Backend API will be connected later
+        try {
 
-        navigate("/home");
+            const response = await api.post("/auth/login", {
+                phoneNumber: formData.phoneNumber,
+                password: formData.password
+            });
+
+            localStorage.setItem(
+                "token",
+                response.data.token
+            );
+
+            alert(response.data.message);
+
+            navigate("/home");
+
+        } catch (error) {
+
+            alert(
+                error.response?.data?.message ||
+                "Login Failed"
+            );
+
+        }
+
     };
 
     return (
@@ -82,4 +106,4 @@ function login() {
 
 }
 
-export default login;
+export default Login;
