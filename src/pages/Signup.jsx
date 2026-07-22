@@ -70,6 +70,24 @@ function Signup() {
           />
 
           <input
+            type="number"
+            name="age"
+            placeholder="Age"
+            value={formData.age}
+            onChange={handleChange}
+            required
+          />
+          
+          <input
+            type="number"
+            name="pregnancyWeek"
+            placeholder="Pregnancy Week"
+            value={formData.pregnancyWeek}
+            onChange={handleChange}
+            required
+          />
+
+          <input
             type="tel"
             name="phoneNumber"
             placeholder="Phone Number"
@@ -77,6 +95,16 @@ function Signup() {
             onChange={handleChange}
             required
           />
+
+          <input
+            type="tel"
+            name="emergencyContact"
+            placeholder="Emergency Contact"
+            value={formData.emergencyContact}
+            onChange={handleChange}
+            required
+          />
+
 
           <input
             type="password"
