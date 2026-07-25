@@ -1,0 +1,80 @@
+[
+  {
+    "week": 1,
+    "babyDevelopment": "The fertilized egg begins dividing and preparing for implantation.",
+    "motherChanges": "Hormonal changes begin, though symptoms are usually minimal.",
+    "diet": [
+      "Start taking folic acid",
+      "Eat leafy green vegetables",
+      "Stay hydrated"
+    ],
+    "exercise": [
+      "Light walking",
+      "Gentle stretching"
+    ],
+    "waterIntake": "2.5 Liters",
+    "sleepHours": "8 Hours",
+    "tips": [
+      "Avoid alcohol and smoking",
+      "Consult your doctor if pregnancy is confirmed"
+    ]
+  },
+  {
+    "week": 18,
+    "babyDevelopment": "Baby can hear sounds and is becoming more active.",
+    "motherChanges": "You may begin feeling regular baby movements.",
+    "diet": [
+      "Iron-rich foods",
+      "Protein-rich meals",
+      "Fresh fruits"
+    ],
+    "exercise": [
+      "Walking",
+      "Prenatal yoga"
+    ],
+    "waterIntake": "3 Liters",
+    "sleepHours": "8 Hours",
+    "tips": [
+      "Sleep on your left side",
+      "Keep attending prenatal checkups"
+    ]
+  },
+  {
+    "week": 25,
+    "babyDevelopment": "Baby's lungs continue developing and movement becomes stronger.",
+    "motherChanges": "Back pain and leg cramps may increase.",
+    "diet": [
+      "Calcium-rich foods",
+      "Milk",
+      "Nuts"
+    ],
+    "exercise": [
+      "Walking",
+      "Pelvic exercises"
+    ],
+    "waterIntake": "3 Liters",
+    "sleepHours": "8 Hours",
+    "tips": [
+      "Monitor baby's movements",
+      "Avoid standing for long periods"
+    ]
+  },
+  {
+    "week": 40,
+    "babyDevelopment": "Baby is fully developed and ready for birth.",
+    "motherChanges": "Labor may begin at any time.",
+    "diet": [
+      "Balanced meals",
+      "Stay hydrated"
+    ],
+    "exercise": [
+      "Light walking"
+    ],
+    "waterIntake": "3 Liters",
+    "sleepHours": "8 Hours",
+    "tips": [
+      "Keep your hospital bag ready",
+      "Contact your doctor if contractions begin"
+    ]
+  }
+]

@@ -1,86 +1,90 @@
 import "./Home.css";
+import { useEffect, useState } from "react";
+import { getUser } from "../services/cacheService";
+import { isOnline } from "../services/networkService";
+import pregnancyWeeks from "../data/pregnancyWeeks.json";
 
-function Home(){
+function Home() {
+  const currentWeekData = pregnancyWeeks.find(
+    (week) => week.week === user?.pregnancyWeek,
+  );
+  const [user, setUser] = useState(null);
+  const [online, setOnline] = useState(isOnline());
 
-return(
+  useEffect(() => {
+    async function loadUser() {
+      const currentUser = await getUser();
+      setUser(currentUser);
+    }
 
-<div className="home-container">
+    loadUser();
 
-<div className="header">
+    const handleOnline = () => setOnline(true);
+    const handleOffline = () => setOnline(false);
 
-<h2>
-Hello 🌸
-</h2>
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
-<p>
-Week 18 Pregnancy
-</p>
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
-</div>
+  return (
+    <div className="home-container">
+      <div className="header">
+        <h2>Hello {user?.fullName || "Mother"} 🌸</h2>
 
+        <p>Week {user?.pregnancyWeek || "--"} Pregnancy</p>
 
-<div className="home-card">
+        <p className={online ? "online" : "offline"}>
+          {online ? "🟢 Online Mode" : "🔴 Offline Mode"}
+        </p>
+      </div>
 
-<h3>
-Today's Care Plan
-</h3>
+      <div className="home-card">
+        <h3>Today's Care Plan</h3>
 
-<p>☐ Drink Water</p>
+        {currentWeekData ? (
+          <>
+            <p>
+              <strong>Baby:</strong> {currentWeekData.babyDevelopment}
+            </p>
 
-<p>☐ Take Medicine</p>
+            <p>
+              <strong>Mother:</strong> {currentWeekData.motherChanges}
+            </p>
 
-<p>☐ Rest Properly</p>
+            <h4>Today's Tips</h4>
 
-</div>
+            {currentWeekData.tips.map((tip, index) => (
+              <p key={index}>✅ {tip}</p>
+            ))}
+          </>
+        ) : (
+          <p>No pregnancy data available.</p>
+        )}
+      </div>
 
+      <div className="home-card">
+        <h3>Ask Maia</h3>
 
-<div className="home-card">
+        <input placeholder="Ask anything about your pregnancy..." />
 
-<h3>
-Ask Maia
-</h3>
+        <button>Send</button>
+      </div>
 
-<input
-placeholder="Type here..."
-/>
+      <div className="home-card emergency">
+        <h3>🚨 Emergency Help</h3>
 
-<button>
+        <p>Severe Pain</p>
+        <p>Bleeding</p>
 
-Send
-
-</button>
-
-</div>
-
-
-<div className="home-card emergency">
-
-<h3>
-
-🚨 Emergency Help
-
-</h3>
-
-<p>
-Severe Pain
-</p>
-
-<p>
-Bleeding
-</p>
-
-<button>
-
-Send Alert
-
-</button>
-
-</div>
-
-</div>
-
-)
-
+        <button>Send Alert</button>
+      </div>
+    </div>
+  );
 }
 
 export default Home;
