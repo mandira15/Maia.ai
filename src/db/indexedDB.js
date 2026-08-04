@@ -1,7 +1,7 @@
 import { openDB } from "idb";
 
 const DB_NAME = "MaiaDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export const dbPromise = openDB(DB_NAME, DB_VERSION, {
   upgrade(db) {
@@ -52,6 +52,14 @@ export const dbPromise = openDB(DB_NAME, DB_VERSION, {
       db.createObjectStore("settings", {
         keyPath: "key",
       });
+    }
+    // Semantic Search Embeddings
+    if (!db.objectStoreNames.contains("embeddings")) {
+      const embeddingStore = db.createObjectStore("embeddings", {
+        keyPath: "id",
+      });
+
+      embeddingStore.createIndex("category", "metadata.category");
     }
 
   },

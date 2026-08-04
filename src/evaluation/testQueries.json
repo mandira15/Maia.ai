@@ -1,0 +1,18 @@
+[
+  {
+    "query": "My back hurts badly during pregnancy",
+    "expectedId": "week25_mother"
+  },
+  {
+    "query": "Can I drink milk?",
+    "expectedId": "week18_diet"
+  },
+  {
+    "query": "How much water should I drink?",
+    "expectedId": "week25_water"
+  },
+  {
+    "query": "Baby is kicking a lot",
+    "expectedId": "week18_baby"
+  }
+]

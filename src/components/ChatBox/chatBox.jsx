@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { askMaia } from "../../services/chatService";
 import { getUser, getChats } from "../../services/cacheService";
 import "./ChatBox.css";
-import { useRef } from "react";
 
 function ChatBox() {
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -32,6 +32,11 @@ function ChatBox() {
         formatted.push({
           type: "bot",
           text: chat.answer,
+          source: chat.source || "cache",
+          confidence:
+            chat.confidence !== undefined
+              ? chat.confidence / 100
+              : 1,
         });
       });
 
@@ -57,19 +62,38 @@ function ChatBox() {
     setQuestion("");
     setLoading(true);
 
-    const user = await getUser();
+    try {
+      const user = await getUser();
 
-    const answer = await askMaia(currentQuestion, user?.pregnancyWeek || 1);
+      const response = await askMaia(
+        currentQuestion,
+        user?.pregnancyWeek || 1
+      );
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        type: "bot",
-        text: answer,
-      },
-    ]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          text: response.answer,   
+          source: response.source,
+          confidence: response.confidence,
+        },
+      ]);
+    } catch (err) {
+      console.error(err);
 
-    setLoading(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          text: "Something went wrong while processing your question.",
+          source: "error",
+          confidence: 0,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -77,11 +101,39 @@ function ChatBox() {
       <div className="messages">
         {messages.map((msg, index) => (
           <div key={index} className={msg.type}>
-            {msg.text}
+            <p>{msg.text}</p>
+
+            {msg.type === "bot" && msg.source && (
+              <small className="message-meta">
+                {msg.source === "online" && "🟢 Live AI"}
+
+                {msg.source === "offline" &&
+                  "🟡 Offline Knowledge"}
+
+                {msg.source === "cache" &&
+                  "🟣 Cached Conversation"}
+
+                {msg.source === "queued" &&
+                  "⚪ Waiting for Internet"}
+
+                {msg.source === "error" &&
+                  "🔴 Error"}
+
+                {msg.confidence !== undefined &&
+                  ` • Confidence ${Math.round(
+                    msg.confidence * 100
+                  )}%`}
+              </small>
+            )}
           </div>
         ))}
 
-        {loading && <div className="bot">Maia is thinking...</div>}
+        {loading && (
+          <div className="bot">
+            Maia is thinking...
+          </div>
+        )}
+
         <div ref={bottomRef}></div>
       </div>
 
@@ -90,9 +142,17 @@ function ChatBox() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask Maia anything..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSend();
+            }
+          }}
         />
 
-        <button onClick={handleSend} disabled={loading}>
+        <button
+          onClick={handleSend}
+          disabled={loading}
+        >
           {loading ? "Sending..." : "Send"}
         </button>
       </div>

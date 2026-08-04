@@ -71,3 +71,34 @@ export async function getPendingRequests() {
   const db = await dbPromise;
   return await db.getAll("outbox");
 }
+
+/* ===========================
+   EMBEDDINGS
+=========================== */
+
+export async function saveEmbeddings(embeddings) {
+  const db = await dbPromise;
+
+  const tx = db.transaction("embeddings", "readwrite");
+
+  for (const embedding of embeddings) {
+    await tx.store.put(embedding);
+  }
+
+  await tx.done;
+}
+
+export async function getEmbeddings() {
+  const db = await dbPromise;
+  return await db.getAll("embeddings");
+}
+export async function embeddingsExist() {
+  const db = await dbPromise;
+  const count = await db.count("embeddings");
+  return count > 0;
+}
+
+export async function clearEmbeddings() {
+  const db = await dbPromise;
+  await db.clear("embeddings");
+}
