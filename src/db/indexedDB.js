@@ -26,14 +26,14 @@ export const dbPromise = openDB(DB_NAME, DB_VERSION, {
     }
 
     // Health Logs
-    if (!db.objectStoreNames.contains("healthLogs")) {
-      const logStore = db.createObjectStore("healthLogs", {
-        keyPath: "logId",
-        autoIncrement: true,
+    if (!db.objectStoreNames.contains("healthEvents")) {
+      const eventStore = db.createObjectStore("healthEvents", {
+        keyPath: "eventId",
       });
 
-      logStore.createIndex("timestamp", "timestamp");
-      logStore.createIndex("type", "type");
+      eventStore.createIndex("type", "type");
+      eventStore.createIndex("createdAt", "createdAt");
+      eventStore.createIndex("logId", "logId");
     }
 
     // Offline Queue

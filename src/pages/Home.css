@@ -238,3 +238,64 @@ body {
     padding: 18px;
   }
 }
+
+.health-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.health-add-btn {
+  width: 28px;
+  height: 28px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #f3f4f6;
+
+  cursor: pointer;
+
+  font-size: 18px;
+  font-weight: 600;
+
+  transition: 0.2s;
+}
+
+.health-add-btn:hover {
+  background: #e5e7eb;
+}
+
+.health-divider {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #ececec;
+}
+
+.symptom-section h4 {
+  margin-bottom: 10px;
+}
+
+.empty-text {
+  color: #777;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.log-symptom-btn {
+  padding: 10px 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #7c3aed;
+  color: white;
+
+  cursor: pointer;
+
+  font-weight: 500;
+}
+
+.log-symptom-btn:hover {
+  background: #6d28d9;
+}
