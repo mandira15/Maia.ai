@@ -1,5 +1,7 @@
 import "./HealthLogger.css";
 import { useState } from "react";
+import { createSymptomLoggedEvent } from "../../events/healthEvents";
+import { saveHealthEvent } from "../../events/eventStore";
 
 function HealthLogger({ open, onClose }) {
   const [symptom, setSymptom] = useState("");
@@ -8,18 +10,37 @@ function HealthLogger({ open, onClose }) {
 
   if (!open) return null;
 
-  function handleSave() {
-    console.log({
-      symptom,
-      severity,
-      note,
-    });
+  async function handleSave() {
+    if (!symptom.trim()) {
+      alert("Please enter a symptom.");
+      return;
+    }
 
-    setSymptom("");
-    setSeverity("Medium");
-    setNote("");
+    try {
+      // Create an event
+      const event = createSymptomLoggedEvent({
+        symptom: symptom.trim(),
+        severity,
+        note: note.trim(),
+      });
 
-    onClose();
+      // Save event locally in IndexedDB
+      await saveHealthEvent(event);
+
+      console.log("✅ Health event saved:", event);
+
+      // Clear form
+      setSymptom("");
+      setSeverity("Medium");
+      setNote("");
+
+      // Close modal
+      onClose();
+
+    } catch (error) {
+      console.error("❌ Failed to save health event:", error);
+      alert("Unable to save your symptom. Please try again.");
+    }
   }
 
   return (
@@ -29,7 +50,8 @@ function HealthLogger({ open, onClose }) {
         <h2>📝 Log Symptom</h2>
 
         <input
-          placeholder="Symptom"
+          type="text"
+          placeholder="Symptom (e.g. Back Pain)"
           value={symptom}
           onChange={(e) => setSymptom(e.target.value)}
         />
@@ -38,13 +60,13 @@ function HealthLogger({ open, onClose }) {
           value={severity}
           onChange={(e) => setSeverity(e.target.value)}
         >
-          <option>Low</option>
-          <option>Medium</option>
-          <option>High</option>
+          <option value="Low">🟢 Low</option>
+          <option value="Medium">🟡 Medium</option>
+          <option value="High">🔴 High</option>
         </select>
 
         <textarea
-          rows="4"
+          rows={4}
           placeholder="Notes (optional)"
           value={note}
           onChange={(e) => setNote(e.target.value)}

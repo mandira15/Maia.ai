@@ -4,15 +4,13 @@ import { getUser } from "../services/cacheService";
 import { isOnline } from "../services/networkService";
 import pregnancyWeeks from "../data/pregnancyWeeks.json";
 import ChatBox from "../components/ChatBox/ChatBox";
-// import { localSemanticSearch } from "../services/localSemanticSearch";
 import evaluateRetrieval from "../evaluation/evaluateRetrieval";
-import { createSymptomLoggedEvent } from "../events/healthEvents";
-import { saveHealthEvent, getHealthEvents } from "../events/eventStore";
 import HealthLogger from "../components/HealthLogger/HealthLogger";
 
 function Home() {
   const [user, setUser] = useState(null);
   const [online, setOnline] = useState(isOnline());
+  const [showLogger, setShowLogger] = useState(false);
 
   useEffect(() => {
     async function initialize() {
@@ -20,29 +18,12 @@ function Home() {
         const currentUser = await getUser();
         setUser(currentUser);
 
-        // Temporary testing
-        const event = createSymptomLoggedEvent({
-          symptom: "Back Pain",
-          severity: "High",
-          note: "Started after walking",
-        });
-
-        console.log("Created Event:", event);
-
-        await saveHealthEvent(event);
-        console.log("Event saved successfully");
-
-        const events = await getHealthEvents();
-        console.log("Stored Events:", events);
-
         // Temporary evaluation
         await evaluateRetrieval();
-
       } catch (err) {
         console.error("Initialize Error:", err);
       }
     }
-
 
     initialize();
 
@@ -59,12 +40,10 @@ function Home() {
   }, []);
 
   const currentWeekData = pregnancyWeeks.find(
-    (week) => week.week === (user?.pregnancyWeek || 1),
+    (week) => week.week === (user?.pregnancyWeek || 1)
   );
 
   const progress = ((user?.pregnancyWeek || 1) / 40) * 100;
-
-  const [showLogger, setShowLogger] = useState(false);
 
   return (
     <div className="home-container">
@@ -78,7 +57,9 @@ function Home() {
               Good Morning, {user?.fullName || "Mother"} 🌸
             </h1>
 
-            <p>Week {user?.pregnancyWeek || 1} of 40</p>
+            <p>
+              Week {user?.pregnancyWeek || 1} of 40
+            </p>
           </div>
 
           <span className={online ? "online" : "offline"}>
@@ -114,11 +95,9 @@ function Home() {
       </div>
 
       {/* DASHBOARD */}
-
       <div className="dashboard-grid">
 
-        {/* Today's Care */}
-
+        {/* TODAY'S CARE */}
         <div className="home-card">
 
           <h3>📅 Today's Care</h3>
@@ -135,8 +114,7 @@ function Home() {
 
         </div>
 
-        {/* Today's Health */}
-
+        {/* TODAY'S HEALTH */}
         <div className="home-card">
 
           <h3>📊 Today's Health</h3>
@@ -146,7 +124,9 @@ function Home() {
 
             <div className="health-right">
               <span>2.1 / 3L</span>
-              <button className="health-add-btn">+</button>
+              <button className="health-add-btn">
+                +
+              </button>
             </div>
           </div>
 
@@ -155,7 +135,9 @@ function Home() {
 
             <div className="health-right">
               <span>7 / 8 hrs</span>
-              <button className="health-add-btn">+</button>
+              <button className="health-add-btn">
+                +
+              </button>
             </div>
           </div>
 
@@ -164,7 +146,9 @@ function Home() {
 
             <div className="health-right">
               <span>20 / 30 mins</span>
-              <button className="health-add-btn">+</button>
+              <button className="health-add-btn">
+                +
+              </button>
             </div>
           </div>
 
@@ -173,12 +157,15 @@ function Home() {
 
             <div className="health-right">
               <span>Normal</span>
-              <button className="health-add-btn">+</button>
+              <button className="health-add-btn">
+                +
+              </button>
             </div>
           </div>
 
           <hr className="health-divider" />
 
+          {/* SYMPTOMS */}
           <div className="symptom-section">
 
             <h4>📝 Symptoms Today</h4>
@@ -187,7 +174,10 @@ function Home() {
               No symptoms logged yet.
             </p>
 
-            <button className="log-symptom-btn">
+            <button
+              className="log-symptom-btn"
+              onClick={() => setShowLogger(true)}
+            >
               + Log Symptom
             </button>
 
@@ -198,7 +188,6 @@ function Home() {
       </div>
 
       {/* ASK MAIA */}
-
       <br />
 
       <div className="home-card">
@@ -210,7 +199,6 @@ function Home() {
       </div>
 
       {/* EMERGENCY */}
-
       <div className="home-card emergency">
 
         <h3>🚨 Emergency</h3>
@@ -227,7 +215,14 @@ function Home() {
 
       </div>
 
+      {/* HEALTH LOGGER MODAL */}
+      <HealthLogger
+        open={showLogger}
+        onClose={() => setShowLogger(false)}
+      />
+
     </div>
-  )};
+  );
+}
 
 export default Home;

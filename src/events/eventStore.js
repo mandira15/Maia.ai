@@ -5,7 +5,6 @@ import { dbPromise } from "../db/indexedDB";
  */
 export async function saveHealthEvent(event) {
   const db = await dbPromise;
-
   await db.put("healthEvents", event);
 }
 
@@ -14,15 +13,13 @@ export async function saveHealthEvent(event) {
  */
 export async function getHealthEvents() {
   const db = await dbPromise;
-
   return await db.getAll("healthEvents");
 }
 
 /*
- * Delete all events (for testing only)
+ * Delete all events (Testing)
  */
 export async function clearHealthEvents() {
   const db = await dbPromise;
-
   await db.clear("healthEvents");
 }

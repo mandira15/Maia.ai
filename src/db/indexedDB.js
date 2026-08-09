@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 
-const DB_NAME = "MaiaDB";
+const DB_NAME = "MaiaDB_v2";
 const DB_VERSION = 2;
 
 export const dbPromise = openDB(DB_NAME, DB_VERSION, {
