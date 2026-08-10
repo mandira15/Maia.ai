@@ -6,14 +6,17 @@ import pregnancyWeeks from "../data/pregnancyWeeks.json";
 import ChatBox from "../components/ChatBox/ChatBox";
 import evaluateRetrieval from "../evaluation/evaluateRetrieval";
 import HealthLogger from "../components/HealthLogger/HealthLogger";
-import { getHealthEvents } from "../events/eventStore";
+import { saveHealthEvent, getHealthEvents } from "../events/eventStore";
 import { projectHealthEvents } from "../events/projector";
+import { createWaterLoggedEvent } from "../events/healthEvents";
 
 function Home() {
   const [user, setUser] = useState(null);
   const [online, setOnline] = useState(isOnline());
   const [showLogger, setShowLogger] = useState(false);
   const [symptoms, setSymptoms] = useState([]);
+  const [water, setWater] = useState(0);
+  const [showWaterOptions, setShowWaterOptions] = useState(false);
 
   useEffect(() => {
     async function initialize() {
@@ -26,6 +29,7 @@ function Home() {
         const projected = projectHealthEvents(events);
 
         setSymptoms(projected.symptoms);
+        setWater(projected.water);
 
         await evaluateRetrieval();
       } catch (err) {
@@ -34,6 +38,23 @@ function Home() {
     }
 
     initialize();
+
+    async function addWater(amount) {
+      //water event handler
+      try {
+        const event = createWaterLoggedEvent(amount);
+
+        await saveHealthEvent(event);
+
+        setWater((prev) => prev + amount);
+
+        setShowWaterOptions(false);
+
+        console.log("💧 Water event saved:", event);
+      } catch (err) {
+        console.error("Failed to save water:", err);
+      }
+    }
 
     const handleOnline = () => setOnline(true);
     const handleOffline = () => setOnline(false);
@@ -110,9 +131,25 @@ function Home() {
             <span>💧 Water</span>
 
             <div className="health-right">
-              <span>2.1 / 3L</span>
-              <button className="health-add-btn">+</button>
+              <span>{(water / 1000).toFixed(1)} / 3L</span>
+
+              <button
+                className="health-add-btn"
+                onClick={() => setShowWaterOptions(!showWaterOptions)}
+              >
+                +
+              </button>
             </div>
+
+            {showWaterOptions && (
+              <div className="water-options">
+                <button onClick={() => addWater(250)}>+250 ml</button>
+
+                <button onClick={() => addWater(500)}>+500 ml</button>
+
+                <button onClick={() => addWater(1000)}>+1 L</button>
+              </div>
+            )}
           </div>
 
           <div className="health-item">
