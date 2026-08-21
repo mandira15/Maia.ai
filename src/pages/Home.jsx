@@ -13,6 +13,7 @@ import { createWaterLoggedEvent } from "../events/healthEvents";
 function Home() {
   const [user, setUser] = useState(null);
   const [online, setOnline] = useState(isOnline());
+  const [maiaMode, setMaiaMode] = useState("online");
   const [showLogger, setShowLogger] = useState(false);
   const [symptoms, setSymptoms] = useState([]);
   const [water, setWater] = useState(0);
@@ -85,9 +86,14 @@ function Home() {
             <p>Week {user?.pregnancyWeek || 1} of 40</p>
           </div>
 
-          <span className={online ? "online" : "offline"}>
-            {online ? "🟢 Online" : "🔴 Offline"}
-          </span>
+          <button
+            className={`mode-toggle ${maiaMode}`}
+            onClick={() =>
+              setMaiaMode((prev) => (prev === "online" ? "offline" : "online"))
+            }
+          >
+            {maiaMode === "online" ? "🟢 Online Mode" : "⚪ Offline Mode"}
+          </button>
         </div>
 
         <div className="progress-bar">
