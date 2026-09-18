@@ -1,7 +1,6 @@
 import "./Home.css";
 import { useEffect, useState } from "react";
 import { getUser } from "../services/cacheService";
-import { isOnline } from "../services/networkService";
 import pregnancyWeeks from "../data/pregnancyWeeks.json";
 import ChatBox from "../components/ChatBox/ChatBox";
 import evaluateRetrieval from "../evaluation/evaluateRetrieval";
@@ -9,16 +8,21 @@ import HealthLogger from "../components/HealthLogger/HealthLogger";
 import { saveHealthEvent, getHealthEvents } from "../events/eventStore";
 import { projectHealthEvents } from "../events/projector";
 import { createWaterLoggedEvent } from "../events/healthEvents";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 
 function Home() {
   const [user, setUser] = useState(null);
-  const [online, setOnline] = useState(isOnline());
-  const [maiaMode, setMaiaMode] = useState("online");
   const [showLogger, setShowLogger] = useState(false);
   const [symptoms, setSymptoms] = useState([]);
   const [water, setWater] = useState(0);
   const [showWaterOptions, setShowWaterOptions] = useState(false);
 
+  // 🌐 Detect actual browser connectivity
+  const isOnline = useOnlineStatus();
+
+  console.log("🌐 Maia connection:", isOnline ? "ONLINE" : "OFFLINE");
+
+  // Initialize user and health data
   useEffect(() => {
     async function initialize() {
       try {
@@ -39,45 +43,36 @@ function Home() {
     }
 
     initialize();
-
-    async function addWater(amount) {
-      //water event handler
-      try {
-        const event = createWaterLoggedEvent(amount);
-
-        await saveHealthEvent(event);
-
-        setWater((prev) => prev + amount);
-
-        setShowWaterOptions(false);
-
-        console.log("💧 Water event saved:", event);
-      } catch (err) {
-        console.error("Failed to save water:", err);
-      }
-    }
-
-    const handleOnline = () => setOnline(true);
-    const handleOffline = () => setOnline(false);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
   }, []);
 
+  // 💧 Water event handler
+  async function addWater(amount) {
+    try {
+      const event = createWaterLoggedEvent(amount);
+
+      await saveHealthEvent(event);
+
+      setWater((prev) => prev + amount);
+
+      setShowWaterOptions(false);
+
+      console.log("💧 Water event saved:", event);
+    } catch (err) {
+      console.error("Failed to save water:", err);
+    }
+  }
+
+  // 📅 Get current pregnancy week data
   const currentWeekData = pregnancyWeeks.find(
     (week) => week.week === (user?.pregnancyWeek || 1),
   );
 
+  // 📊 Pregnancy progress
   const progress = ((user?.pregnancyWeek || 1) / 40) * 100;
 
   return (
     <div className="home-container">
-      {/* HERO CARD */}
+      {/* ================= HERO CARD ================= */}
       <div className="hero-card">
         <div className="hero-top">
           <div>
@@ -86,14 +81,10 @@ function Home() {
             <p>Week {user?.pregnancyWeek || 1} of 40</p>
           </div>
 
-          <button
-            className={`mode-toggle ${maiaMode}`}
-            onClick={() =>
-              setMaiaMode((prev) => (prev === "online" ? "offline" : "online"))
-            }
-          >
-            {maiaMode === "online" ? "🟢 Online Mode" : "⚪ Offline Mode"}
-          </button>
+          {/* 🌐 REAL CONNECTIVITY STATUS */}
+          <div className={`mode-toggle ${isOnline ? "online" : "offline"}`}>
+            {isOnline ? "🟢 Online Mode" : "⚪ Offline Mode"}
+          </div>
         </div>
 
         <div className="progress-bar">
@@ -115,9 +106,9 @@ function Home() {
         </div>
       </div>
 
-      {/* DASHBOARD */}
+      {/* ================= DASHBOARD ================= */}
       <div className="dashboard-grid">
-        {/* TODAY'S CARE */}
+        {/* ================= TODAY'S CARE ================= */}
         <div className="home-card">
           <h3>📅 Today's Care</h3>
 
@@ -129,10 +120,11 @@ function Home() {
           ))}
         </div>
 
-        {/* TODAY'S HEALTH */}
+        {/* ================= TODAY'S HEALTH ================= */}
         <div className="home-card">
           <h3>📊 Today's Health</h3>
 
+          {/* WATER */}
           <div className="health-item">
             <span>💧 Water</span>
 
@@ -158,36 +150,42 @@ function Home() {
             )}
           </div>
 
+          {/* SLEEP */}
           <div className="health-item">
             <span>😴 Sleep</span>
 
             <div className="health-right">
               <span>7 / 8 hrs</span>
+
               <button className="health-add-btn">+</button>
             </div>
           </div>
 
+          {/* WALKING */}
           <div className="health-item">
             <span>🚶 Walking</span>
 
             <div className="health-right">
               <span>20 / 30 mins</span>
+
               <button className="health-add-btn">+</button>
             </div>
           </div>
 
+          {/* BLOOD PRESSURE */}
           <div className="health-item">
             <span>❤️ Blood Pressure</span>
 
             <div className="health-right">
               <span>Normal</span>
+
               <button className="health-add-btn">+</button>
             </div>
           </div>
 
           <hr className="health-divider" />
 
-          {/* SYMPTOMS */}
+          {/* ================= SYMPTOMS ================= */}
           <div className="symptom-section">
             <h4>📝 Symptoms Today</h4>
 
@@ -199,6 +197,7 @@ function Home() {
                   <div className="symptom-item" key={item.logId || index}>
                     <div>
                       <strong>🤕 {item.symptom}</strong>
+
                       <small>{item.note}</small>
                     </div>
 
@@ -218,7 +217,7 @@ function Home() {
         </div>
       </div>
 
-      {/* ASK MAIA */}
+      {/* ================= ASK MAIA ================= */}
       <br />
 
       <div className="home-card">
@@ -227,7 +226,7 @@ function Home() {
         <ChatBox />
       </div>
 
-      {/* EMERGENCY */}
+      {/* ================= EMERGENCY ================= */}
       <div className="home-card emergency">
         <h3>🚨 Emergency</h3>
 
@@ -240,7 +239,7 @@ function Home() {
         </div>
       </div>
 
-      {/* HEALTH LOGGER MODAL */}
+      {/* ================= HEALTH LOGGER ================= */}
       <HealthLogger open={showLogger} onClose={() => setShowLogger(false)} />
     </div>
   );
