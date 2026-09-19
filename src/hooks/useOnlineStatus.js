@@ -1,27 +1,34 @@
 import { useEffect, useState } from "react";
+import {
+  isOnline,
+  onOnline,
+  onOffline,
+  removeOnline,
+  removeOffline,
+} from "../services/networkService";
 
 export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [online, setOnline] = useState(isOnline());
 
   useEffect(() => {
     const handleOnline = () => {
       console.log("🌐 Maia: Back online");
-      setIsOnline(true);
+      setOnline(true);
     };
 
     const handleOffline = () => {
       console.log("📴 Maia: Offline");
-      setIsOnline(false);
+      setOnline(false);
     };
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    onOnline(handleOnline);
+    onOffline(handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      removeOnline(handleOnline);
+      removeOffline(handleOffline);
     };
   }, []);
 
-  return isOnline;
+  return online;
 }
