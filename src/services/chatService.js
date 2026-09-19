@@ -1,22 +1,49 @@
 import api from "../api/api";
 import { isOnline } from "./networkService";
+
 import {
   saveChat,
   queueOfflineRequest,
 } from "./cacheService";
+
+import { getUser } from "./cacheService";
+
 import { localSemanticSearch } from "./localSemanticSearch";
+
+// Minimum similarity required before Maia trusts an offline result.
+// We can tune this after testing your actual retrieval scores.
+const OFFLINE_CONFIDENCE_THRESHOLD = 0.6;
 
 /**
  * Maia's main conversation service.
  *
- * Routing priority:
+ * Routing:
  *
- * 1. Online + backend available → Gemini
- * 2. Offline OR backend unavailable → Local semantic search
- * 3. No relevant local answer → Offline queue
+ * ONLINE
+ *   ↓
+ * Backend /api/ai/guidance
+ *   ↓
+ * Gemini
+ *
+ * If backend fails:
+ *   ↓
+ * Local semantic search
+ *
+ * OFFLINE
+ *   ↓
+ * Local semantic search
+ *
+ * If no sufficiently relevant local answer:
+ *   ↓
+ * Offline queue
  */
+
 export async function askMaia(question, pregnancyWeek) {
   const cleanQuestion = question.trim();
+
+  // --------------------------------------------------
+  // Empty question
+  // --------------------------------------------------
 
   if (!cleanQuestion) {
     return {
@@ -26,34 +53,46 @@ export async function askMaia(question, pregnancyWeek) {
     };
   }
 
-  console.log("🤖 Maia received question:", cleanQuestion);
+  console.log("🤖 Maia received:", cleanQuestion);
 
-  // =====================================================
+  // Get locally cached user information
+  let user = null;
+
+  try {
+    user = await getUser();
+  } catch (err) {
+    console.warn("⚠️ Could not load user profile:", err);
+  }
+
+  // --------------------------------------------------
   // 1. ONLINE → BACKEND → GEMINI
-  // =====================================================
+  // --------------------------------------------------
 
   if (isOnline()) {
-    console.log("🟢 Maia is online. Trying Gemini...");
+    console.log("🟢 Maia is online. Connecting to Gemini...");
 
     try {
-      const res = await api.post("/chat", {
+      const res = await api.post("/ai/guidance", {
+        fullName: user?.fullName || "Mother",
+        age: user?.age || "",
+        pregnancyWeek: pregnancyWeek || user?.pregnancyWeek || 1,
         question: cleanQuestion,
-        pregnancyWeek,
       });
 
-      const answer = res.data?.answer;
+      // Backend returns { success, response }
+      const answer = res.data?.response;
 
-      // Make sure backend actually returned an answer
       if (!answer) {
-        throw new Error("Backend returned an empty answer.");
+        throw new Error("Backend returned an empty response.");
       }
 
-      // Save successful online conversation locally
+      // Save successful Gemini conversation locally
       await saveChat({
         question: cleanQuestion,
         normalizedQuestion: cleanQuestion.toLowerCase(),
         answer,
-        pregnancyWeek,
+        pregnancyWeek:
+          pregnancyWeek || user?.pregnancyWeek || 1,
         source: "gemini",
         confidence: 100,
       });
@@ -78,12 +117,14 @@ export async function askMaia(question, pregnancyWeek) {
     );
   }
 
-  // =====================================================
+  // --------------------------------------------------
   // 2. OFFLINE → LOCAL SEMANTIC SEARCH
-  // =====================================================
+  // --------------------------------------------------
 
   try {
-    console.log("🔎 Searching Maia's offline knowledge...");
+    console.log(
+      "🔎 Searching Maia's offline knowledge..."
+    );
 
     const results = await localSemanticSearch(
       cleanQuestion,
@@ -93,22 +134,36 @@ export async function askMaia(question, pregnancyWeek) {
     if (results.length > 0) {
       const best = results[0];
 
+      const score = Number(best.score);
+
       console.log(
-        "📚 Offline answer found.",
-        "Score:",
-        best.score
+        "📚 Best offline result score:",
+        score
       );
 
-      return {
-        answer: best.metadata.text,
-        source: "offline",
-        confidence: Number(best.score.toFixed(2)),
-      };
-    }
+      // Only trust sufficiently relevant results
+      if (score >= OFFLINE_CONFIDENCE_THRESHOLD) {
+        console.log(
+          "✅ Relevant offline answer found."
+        );
 
-    console.log(
-      "⚠️ No relevant offline knowledge found."
-    );
+        return {
+          answer: best.metadata.text,
+          source: "offline",
+          confidence: Number(score.toFixed(2)),
+        };
+      }
+
+      console.warn(
+        `⚠️ Offline result rejected. Score ${score.toFixed(
+          2
+        )} is below threshold ${OFFLINE_CONFIDENCE_THRESHOLD}.`
+      );
+    } else {
+      console.log(
+        "⚠️ No offline results found."
+      );
+    }
 
   } catch (err) {
     console.error(
@@ -117,14 +172,15 @@ export async function askMaia(question, pregnancyWeek) {
     );
   }
 
-  // =====================================================
-  // 3. NO OFFLINE ANSWER → OUTBOX QUEUE
-  // =====================================================
+  // --------------------------------------------------
+  // 3. NO SAFE OFFLINE ANSWER → QUEUE
+  // --------------------------------------------------
 
   try {
     await queueOfflineRequest({
       question: cleanQuestion,
-      pregnancyWeek,
+      pregnancyWeek:
+        pregnancyWeek || user?.pregnancyWeek || 1,
     });
 
     console.log(
@@ -145,13 +201,13 @@ export async function askMaia(question, pregnancyWeek) {
     };
   }
 
-  // =====================================================
+  // --------------------------------------------------
   // 4. QUEUED RESPONSE
-  // =====================================================
+  // --------------------------------------------------
 
   return {
     answer:
-      "I couldn't find a relevant answer in my offline medical knowledge. Your question has been saved and will be answered when internet is available.",
+      "I couldn't find enough relevant information in Maia's offline knowledge. I've saved your question and it can be answered when an internet connection is available.",
     source: "queued",
     confidence: 0,
   };
