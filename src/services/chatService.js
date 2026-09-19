@@ -44,33 +44,7 @@ export async function askMaia(question, pregnancyWeek) {
   }
 
   // ==========================
-  // OFFLINE SEMANTIC SEARCH
-  // ==========================
-
-  try {
-
-    const results = await localSemanticSearch(question, 1);
-
-    if (results.length > 0) {
-
-      const best = results[0];
-
-      return {
-        answer: best.metadata.text,
-        source: "offline",
-        confidence: Number(best.score.toFixed(2)),
-      };
-
-    }
-
-  } catch (err) {
-
-    console.error("Offline semantic search failed:", err);
-
-  }
-
-  // ==========================
-  // OFFLINE CHAT CACHE
+  // OFFLINE MODE
   // ==========================
 
   try {
