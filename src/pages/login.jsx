@@ -2,6 +2,7 @@ import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../api/api";
+import { saveUser } from "../services/cacheService";
 
 function Login() {
 
@@ -34,6 +35,13 @@ function Login() {
                 "token",
                 response.data.token
             );
+
+            if (response.data.user) {
+                await saveUser({
+                    ...response.data.user,
+                    pregnancyWeekRecordedAt: Date.now(),
+                });
+            }
 
             alert(response.data.message);
 

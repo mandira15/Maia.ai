@@ -65,39 +65,70 @@ export async function askMaia(question, pregnancyWeek) {
   }
 
   // --------------------------------------------------
-  // 1. ONLINE → BACKEND → GEMINI
+  // 1. CHECK BROWSER CONNECTIVITY
   // --------------------------------------------------
 
-  if (isOnline()) {
-    console.log("🟢 Maia is online. Connecting to Gemini...");
+  const browserOnline = isOnline();
+
+  console.log(
+    `🌐 Maia network status: ${browserOnline ? "ONLINE" : "OFFLINE"
+    }`
+  );
+
+  // --------------------------------------------------
+  // 2. ONLINE → BACKEND → GEMINI
+  // --------------------------------------------------
+
+  if (browserOnline) {
+    console.log(
+      "🟢 Network available → contacting Maia backend..."
+    );
 
     try {
       const res = await api.post("/ai/guidance", {
         fullName: user?.fullName || "Mother",
         age: user?.age || "",
-        pregnancyWeek: pregnancyWeek || user?.pregnancyWeek || 1,
+        pregnancyWeek:
+          pregnancyWeek ||
+          user?.pregnancyWeek ||
+          1,
         question: cleanQuestion,
       });
 
-      // Backend returns { success, response }
+      // Backend returns:
+      // { success: true, response: "..." }
+
       const answer = res.data?.response;
 
-      if (!answer) {
-        throw new Error("Backend returned an empty response.");
+      if (!answer || !answer.trim()) {
+        throw new Error(
+          "Backend returned an empty AI response."
+        );
       }
 
-      // Save successful Gemini conversation locally
+      // ----------------------------------------------
+      // Gemini succeeded
+      // ----------------------------------------------
+
+      console.log(
+        "✅ Maia backend → Gemini response received."
+      );
+
       await saveChat({
         question: cleanQuestion,
-        normalizedQuestion: cleanQuestion.toLowerCase(),
+        normalizedQuestion:
+          cleanQuestion.toLowerCase(),
+
         answer,
+
         pregnancyWeek:
-          pregnancyWeek || user?.pregnancyWeek || 1,
+          pregnancyWeek ||
+          user?.pregnancyWeek ||
+          1,
+
         source: "gemini",
         confidence: 100,
       });
-
-      console.log("✅ Gemini response received.");
 
       return {
         answer,
@@ -106,22 +137,45 @@ export async function askMaia(question, pregnancyWeek) {
       };
 
     } catch (err) {
+
+      // ----------------------------------------------
+      // Backend/Gemini unavailable
+      // ----------------------------------------------
+
       console.warn(
-        "⚠️ Gemini request failed. Falling back to offline knowledge.",
+        "⚠️ Maia backend/Gemini unavailable.",
+        err?.response?.data ||
+        err?.message ||
         err
       );
+
+      console.log(
+        "🔄 Falling back to Maia's local knowledge..."
+      );
     }
+
   } else {
+
+    // ----------------------------------------------
+    // TRUE OFFLINE
+    // ----------------------------------------------
+
     console.log(
-      "📴 Maia is offline. Using local knowledge."
+      "📴 No internet connection."
+    );
+
+    console.log(
+      "📚 Using Maia's local knowledge..."
     );
   }
 
+
   // --------------------------------------------------
-  // 2. OFFLINE → LOCAL SEMANTIC SEARCH
+  // 3. LOCAL SEMANTIC SEARCH
   // --------------------------------------------------
 
   try {
+
     console.log(
       "🔎 Searching Maia's offline knowledge..."
     );
@@ -131,65 +185,89 @@ export async function askMaia(question, pregnancyWeek) {
       1
     );
 
-    if (results.length > 0) {
+    if (results?.length > 0) {
+
       const best = results[0];
 
       const score = Number(best.score);
 
       console.log(
-        "📚 Best offline result score:",
-        score
+        `📚 Best local match: ${score.toFixed(3)}`
       );
 
-      // Only trust sufficiently relevant results
-      if (score >= OFFLINE_CONFIDENCE_THRESHOLD) {
+      // ----------------------------------------------
+      // SAFE LOCAL MATCH
+      // ----------------------------------------------
+
+      if (
+        Number.isFinite(score) &&
+        score >= OFFLINE_CONFIDENCE_THRESHOLD
+      ) {
+
         console.log(
-          "✅ Relevant offline answer found."
+          "✅ Relevant local knowledge found."
         );
 
         return {
           answer: best.metadata.text,
-          source: "offline",
-          confidence: Number(score.toFixed(2)),
+          source: browserOnline
+            ? "fallback"
+            : "offline",
+          confidence: Number(
+            score.toFixed(2)
+          ),
         };
       }
 
+      // ----------------------------------------------
+      // WEAK LOCAL MATCH
+      // ----------------------------------------------
+
       console.warn(
-        `⚠️ Offline result rejected. Score ${score.toFixed(
-          2
-        )} is below threshold ${OFFLINE_CONFIDENCE_THRESHOLD}.`
+        `⚠️ Local result rejected. ` +
+        `Score ${score.toFixed(3)} < ` +
+        `threshold ${OFFLINE_CONFIDENCE_THRESHOLD}`
       );
+
     } else {
+
       console.log(
-        "⚠️ No offline results found."
+        "⚠️ No local knowledge matched the question."
       );
     }
 
   } catch (err) {
+
     console.error(
-      "❌ Offline semantic search failed:",
+      "❌ Local semantic search failed:",
       err
     );
   }
 
+
   // --------------------------------------------------
-  // 3. NO SAFE OFFLINE ANSWER → QUEUE
+  // 4. NO SAFE ANSWER → QUEUE
   // --------------------------------------------------
 
   try {
+
     await queueOfflineRequest({
       question: cleanQuestion,
+
       pregnancyWeek:
-        pregnancyWeek || user?.pregnancyWeek || 1,
+        pregnancyWeek ||
+        user?.pregnancyWeek ||
+        1,
     });
 
     console.log(
-      "📥 Question added to offline queue."
+      "📥 Question saved to Maia's offline queue."
     );
 
   } catch (err) {
+
     console.error(
-      "❌ Failed to queue offline request:",
+      "❌ Failed to queue question:",
       err
     );
 
@@ -201,13 +279,17 @@ export async function askMaia(question, pregnancyWeek) {
     };
   }
 
+
   // --------------------------------------------------
-  // 4. QUEUED RESPONSE
+  // 5. QUEUED RESPONSE
   // --------------------------------------------------
 
   return {
     answer:
-      "I couldn't find enough relevant information in Maia's offline knowledge. I've saved your question and it can be answered when an internet connection is available.",
+      browserOnline
+        ? "Maia's AI service is temporarily unavailable, and I couldn't find enough relevant information in my offline knowledge. I've saved your question and it can be answered when the AI service is available again."
+        : "I couldn't find enough relevant information in Maia's offline knowledge. I've saved your question and it can be answered when an internet connection is available.",
+
     source: "queued",
     confidence: 0,
   };

@@ -2,6 +2,7 @@ import "./Signup.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
+import { saveUser } from "../services/cacheService";
 
 function Signup() {
   const navigate = useNavigate();
@@ -43,6 +44,13 @@ function Signup() {
       });
 
       localStorage.setItem("token", response.data.token);
+
+      if (response.data.user) {
+        await saveUser({
+          ...response.data.user,
+          pregnancyWeekRecordedAt: Date.now(),
+        });
+      }
 
       navigate("/home");
     } catch (error) {

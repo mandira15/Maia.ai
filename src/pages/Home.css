@@ -5,238 +5,360 @@
 }
 
 body {
-  background: #fdf7fb;
-  font-family: "Segoe UI", sans-serif;
+  background: #faf7fb;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* ================= 1. PAGE SHELL ================= */
 
 .home-container {
-  max-width: 1300px;
-  margin: auto;
-  padding: 30px;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* ================= HERO ================= */
+/* ================= 2. HERO CARD ================= */
 
 .hero-card {
-  background: linear-gradient(135deg, #ff7eb3, #a855f7);
+  background: linear-gradient(135deg, #ff7597 0%, #a855f7 65%, #9333ea 100%);
   color: white;
-  border-radius: 28px;
-  padding: 35px;
-  box-shadow: 0 20px 45px rgba(168, 85, 247, 0.25);
+  border-radius: 20px;
+  padding: 32px 34px;
+  box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.28), 0 4px 10px -3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 30px;
+  gap: 18px;
+  margin-bottom: 22px;
 }
 
-.hero-top h1 {
-  font-size: 2rem;
-  margin-bottom: 8px;
+.hero-heading-group h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  line-height: 1.25;
 }
 
-.hero-top p {
-  opacity: .95;
+.hero-subheading {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.online,
-.offline {
-  padding: 8px 18px;
-  border-radius: 50px;
-  font-size: .9rem;
+.hero-week-highlight {
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.reference-tag {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+/* Professional Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.82rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-.online {
-  background: rgba(255,255,255,.25);
+.status-badge .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
-.offline {
-  background: rgba(255,0,0,.25);
+.status-badge.online .status-dot {
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
 }
 
-/* Progress */
+.status-badge.offline .status-dot {
+  background: #fca5a5;
+  box-shadow: 0 0 6px rgba(252, 165, 165, 0.6);
+}
+
+.status-label {
+  color: #ffffff;
+}
+
+/* Hero Progress */
+.hero-progress-section {
+  margin: 18px 0 22px;
+}
 
 .progress-bar {
   width: 100%;
-  height: 14px;
-  background: rgba(255,255,255,.25);
-  border-radius: 20px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
   overflow: hidden;
-  margin: 18px 0;
+  margin-bottom: 8px;
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 20px;
-  background: rgb(23, 251, 76);
+  border-radius: 12px;
+  background: #34d399;
+  transition: width 0.4s ease;
 }
 
-/* Baby + Mother */
+.hero-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.94);
+  font-weight: 500;
+}
 
+.trimester-badge {
+  background: rgba(255, 255, 255, 0.22);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Hero Baby + Mother Cards */
 .hero-info {
   display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 20px;
-  margin-top: 25px;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 10px;
 }
 
-.hero-info div {
-  background: rgba(255,255,255,.15);
-  backdrop-filter: blur(12px);
-  border-radius: 18px;
-  padding: 20px;
+.hero-info-card {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-.hero-info h3 {
-  margin-bottom: 10px;
+.hero-info-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.hero-info p {
-  line-height: 1.6;
+.hero-info-card p {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.94);
 }
 
-/* ================= GRID ================= */
+/* ================= 3. DASHBOARD GRID ================= */
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 25px;
-  margin-top: 30px;
+  gap: 22px;
+  align-items: start;
 }
 
-/* ================= CARDS ================= */
+/* ================= 4. STANDARDIZED CARDS ================= */
 
-.home-card {
-  background: white;
-  border-radius: 24px;
-  padding: 25px;
-  box-shadow: 0 8px 25px rgba(0,0,0,.06);
+.home-card,
+.care-section {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  border: 1px solid #f0eaf4;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.home-card h3 {
-  color: #374151;
-  margin-bottom: 20px;
+.home-card:hover,
+.care-section:hover {
+  border-color: #e5dbec;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.04), 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
-/* Checklist */
+.home-card h3,
+.care-section h2 {
+  color: #1f2937;
+  font-size: 1.18rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
 
-.tip-item {
+.card-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 3px;
+}
+
+.section-header,
+.section-header-simple {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
-  font-size: 1rem;
+  margin-bottom: 18px;
 }
 
-.tip-item input {
-  width: 18px;
-  height: 18px;
-  accent-color: #ff6b9a;
+.section-header p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 3px;
 }
 
-/* ================= HEALTH ================= */
+/* ================= 5. TODAY'S CARE ================= */
+
+.care-progress {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.care-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.care-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fdfcff;
+  border: 1px solid #f1ecf6;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.care-item:hover {
+  background: #faf7fd;
+  border-color: #ddd6fe;
+  transform: translateY(-1px);
+}
+
+.care-item input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.care-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1.8px solid #c4b5fd;
+  border-radius: 6px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fff;
+  transition: all 0.15s ease;
+}
+
+.care-item:hover .care-check {
+  border-color: #8b5cf6;
+}
+
+.care-item.completed {
+  background: #f9f8fc;
+  border-color: #e9e3f0;
+}
+
+.care-item.completed .care-check {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.care-text {
+  color: #374151;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.care-item.completed .care-text {
+  color: #9ca3af;
+  text-decoration: line-through;
+  text-decoration-color: #c4b5fd;
+}
+
+/* ================= 6. TODAY'S HEALTH ================= */
+
+.health-date-badge {
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.health-item-wrapper {
+  position: relative;
+}
 
 .health-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid #ececec;
+  padding: 12px 6px;
+  border-bottom: 1px solid #f3eff6;
+  transition: background 0.12s ease;
 }
 
 .health-item:last-child {
   border-bottom: none;
 }
 
-.health-item span:first-child {
+.health-label {
   font-weight: 600;
-  color: #444;
-}
-
-.health-item span:last-child {
-  color: #888;
-}
-
-/* ================= CHAT ================= */
-
-.chat-card {
-  margin-top: 30px;
-}
-
-.chat-card .home-card {
-  padding: 30px;
-}
-
-/* ================= EMERGENCY ================= */
-
-.emergency {
-  margin-top: 30px;
-}
-
-.emergency-buttons {
+  color: #374151;
+  font-size: 0.94rem;
   display: flex;
-  gap: 15px;
-  margin-top: 15px;
-}
-
-.emergency-buttons button {
-  flex: 1;
-  padding: 16px;
-  border: none;
-  border-radius: 14px;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: .3s;
-}
-
-.emergency-buttons button:nth-child(1) {
-  background: #ef4444;
-}
-
-.emergency-buttons button:nth-child(2) {
-  background: #3b82f6;
-}
-
-.emergency-buttons button:nth-child(3) {
-  background: #10b981;
-}
-
-.emergency-buttons button:hover {
-  transform: translateY(-3px);
-}
-
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 900px) {
-
-  .hero-top {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .hero-info {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .emergency-buttons {
-    flex-direction: column;
-  }
-
-  .hero-top h1 {
-    font-size: 1.6rem;
-  }
-
-  .home-container {
-    padding: 18px;
-  }
+  align-items: center;
+  gap: 6px;
 }
 
 .health-right {
@@ -245,57 +367,402 @@ body {
   gap: 12px;
 }
 
+.health-val {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
 .health-add-btn {
   width: 28px;
   height: 28px;
-
-  border: none;
-  border-radius: 50%;
-
-  background: #f3f4f6;
-
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+  background: #faf5ff;
+  color: #7c3aed;
   cursor: pointer;
-
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-
-  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.15s ease;
 }
 
 .health-add-btn:hover {
-  background: #e5e7eb;
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.water-options {
+  display: flex;
+  gap: 8px;
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 10px;
+  padding: 8px;
+  margin: 6px 0 10px;
+}
+
+.water-options button {
+  flex: 1;
+  border: 1px solid #d8b4fe;
+  background: white;
+  color: #7c3aed;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.water-options button:hover {
+  background: #7c3aed;
+  color: white;
+  border-color: #7c3aed;
 }
 
 .health-divider {
-  margin: 20px 0;
+  margin: 18px 0;
   border: none;
-  border-top: 1px solid #ececec;
+  border-top: 1px solid #f0eaf4;
 }
 
-.symptom-section h4 {
-  margin-bottom: 10px;
+/* ================= 7. SYMPTOMS SECTION ================= */
+
+.symptom-section {
+  display: flex;
+  flex-direction: column;
 }
 
-.empty-text {
-  color: #777;
-  font-size: 14px;
+.symptom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.symptom-header h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.symptom-subtitle {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.symptom-count {
+  font-size: 0.78rem;
+  background: #fdf2f8;
+  color: #db2777;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 1px solid #fbcfe8;
+}
+
+.symptoms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
-.log-symptom-btn {
-  padding: 10px 18px;
+.symptom-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #faf7fd;
+  border: 1px solid #f0e8f7;
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: border-color 0.15s ease;
+}
 
-  border: none;
+.symptom-item:hover {
+  border-color: #e5dbec;
+}
+
+.symptom-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.symptom-title {
+  color: #1f2937;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.symptom-note {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.severity-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.severity-low {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.severity-medium {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fde047;
+}
+
+.severity-high {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.empty-text {
+  color: #9ca3af;
+  font-size: 0.88rem;
+  margin-bottom: 14px;
+  text-align: center;
+  padding: 14px 0;
+  background: #faf9fb;
   border-radius: 8px;
+}
 
-  background: #7c3aed;
-  color: white;
-
+.log-symptom-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1.5px dashed #c4b5fd;
+  border-radius: 10px;
+  background: #faf5ff;
+  color: #7c3aed;
   cursor: pointer;
-
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
 }
 
 .log-symptom-btn:hover {
+  background: #f3e8ff;
+  border-color: #a78bfa;
+}
+
+/* ================= 8. ASK MAIA CHAT CARD ================= */
+
+.chat-card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-header-with-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+/* Chatbox internal refinements */
+.chatbox {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chatbox .messages {
+  max-height: 320px;
+  min-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #faf7fb;
+  border: 1px solid #f1ecf6;
+  border-radius: 12px;
+}
+
+.chatbox .user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #f472b6, #e879f9);
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 14px 14px 2px 14px;
+  max-width: 78%;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  box-shadow: 0 2px 6px rgba(232, 121, 249, 0.2);
+}
+
+.chatbox .bot {
+  align-self: flex-start;
+  background: #ffffff;
+  color: #1f2937;
+  padding: 10px 14px;
+  border-radius: 14px 14px 14px 2px;
+  max-width: 78%;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  border: 1px solid #ebe5f2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.chatbox .message-meta {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.75rem;
+  color: #7c3aed;
+  font-weight: 500;
+}
+
+.chatbox .chat-input {
+  display: flex;
+  gap: 8px;
+}
+
+.chatbox .chat-input input {
+  flex: 1;
+  padding: 11px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chatbox .chat-input input:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12);
+}
+
+.chatbox .chat-input button {
+  padding: 11px 20px;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.chatbox .chat-input button:hover {
   background: #6d28d9;
 }
+
+.chatbox .chat-input button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* ================= 9. EMERGENCY ================= */
+
+.emergency {
+  border-color: #fee2e2;
+  background: #fffbfb;
+}
+
+.emergency h3 {
+  color: #dc2626;
+  font-size: 1.1rem;
+}
+
+.emergency-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.emergency-buttons button {
+  flex: 1;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.emergency-buttons button:nth-child(1) {
+  background: #ef4444;
+}
+
+.emergency-buttons button:nth-child(1):hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.emergency-buttons button:nth-child(2) {
+  background: #3b82f6;
+}
+
+.emergency-buttons button:nth-child(2):hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.emergency-buttons button:nth-child(3) {
+  background: #10b981;
+}
+
+.emergency-buttons button:nth-child(3):hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+/* ================= 10. RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+  .home-container {
+    padding: 16px 14px 36px;
+    gap: 18px;
+  }
+
+  .hero-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .hero-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .hero-heading-group h1 {
+    font-size: 1.55rem;
+  }
+
+  .hero-info {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .emergency-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
