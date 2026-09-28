@@ -134,48 +134,63 @@ function buildCareTasks(currentWeekData, water, sleep, walking, symptoms) {
   // 1. Water Goal Task
   const waterTargetL = getWaterTargetLiters(currentWeekData.waterIntake);
   const targetWaterMl = waterTargetL * 1000;
+
   if (water < targetWaterMl) {
     const remainingWater = Math.ceil(targetWaterMl - water);
+
     tasks.push({
-      id: `care-water-${getTodayDateKey()}`,
-      text: `Drink ${formatRemainingWater(remainingWater)} more to reach your ${waterTargetL}L water goal`,
+      id: "care-water",
+      text: `Drink ${formatRemainingWater(
+        remainingWater
+      )} more to reach your ${waterTargetL}L water goal`,
       type: "water",
     });
   }
 
   // 2. Sleep Goal Task
   const sleepTarget = getSleepTargetHours(currentWeekData.sleepHours);
+
   if (sleep < sleepTarget) {
     const remainingSleep = Math.max(0, sleepTarget - sleep);
+
     tasks.push({
-      id: `care-sleep-${getTodayDateKey()}`,
-      text: `Rest well: aim for ${remainingSleep % 1 === 0 ? remainingSleep : remainingSleep.toFixed(1)} more hr${remainingSleep > 1 ? "s" : ""} of sleep`,
+      id: "care-sleep",
+      text: `Rest well: aim for ${
+        remainingSleep % 1 === 0
+          ? remainingSleep
+          : remainingSleep.toFixed(1)
+      } more hr${remainingSleep > 1 ? "s" : ""} of sleep`,
       type: "sleep",
     });
   }
 
   // 3. Walking / Activity Goal Task
   const walkingTarget = DEFAULT_WALKING_GOAL_MINS;
+
   if (walking < walkingTarget) {
     const remainingWalking = walkingTarget - walking;
+
     tasks.push({
-      id: `care-walking-${getTodayDateKey()}`,
+      id: "care-walking",
       text: `Aim for ${remainingWalking} more mins of gentle walking or stretching`,
       type: "walking",
     });
   }
 
-  // 4. Symptom Monitoring Task (if any symptom logged today)
+  // 4. Symptom Monitoring Task
   if (symptoms && symptoms.length > 0) {
     tasks.push({
-      id: `care-symptom-${getTodayDateKey()}`,
-      text: `Monitor logged symptom${symptoms.length > 1 ? "s" : ""} (${symptoms.map((s) => s.symptom).join(", ")})`,
+      id: "care-symptom",
+      text: `Monitor logged symptom${
+        symptoms.length > 1 ? "s" : ""
+      } (${symptoms.map((s) => s.symptom).join(", ")})`,
       type: "symptom",
     });
   }
 
   // 5. Week-specific pregnancy tips
   const tips = (currentWeekData.tips || []).filter(Boolean);
+
   tips.forEach((tip, idx) => {
     if (tasks.length < 5) {
       tasks.push({
@@ -199,7 +214,14 @@ function Home() {
   const [walking, setWalking] = useState(0);
   const [bloodPressure, setBloodPressure] = useState(null);
   const [showWaterOptions, setShowWaterOptions] = useState(false);
-  const [careTasks, setCareTasks] = useState({});
+  const [careTasks, setCareTasks] = useState(() => {
+    try {
+      const initialCare = getTodayCare();
+      return initialCare.completed || {};
+    } catch {
+      return {};
+    }
+  });
 
   // 🌐 Detect actual browser connectivity
   const isOnline = useOnlineStatus();
@@ -243,17 +265,19 @@ function Home() {
   const weekRef = useMemo(() => getReferenceWeekData(currentWeek), [currentWeek]);
   const currentWeekData = weekRef?.data;
 
-  // Load Today's Care state
+  // Load Today's Care state for current user and week
   useEffect(() => {
-    if (!user) return;
-
     function loadCareState() {
       const todayCare = getTodayCare(currentWeek);
-      setCareTasks(todayCare.completed || {});
+      setCareTasks((prev) => ({
+        ...todayCare.completed,
+        ...prev,
+      }));
     }
 
     loadCareState();
-  }, [user, currentWeek]);
+  }, [currentWeek]);
+
 
   // 💧 Water event handler
   async function addWater(amount) {

@@ -41,16 +41,14 @@ export function getTodayCare(pregnancyWeek) {
 
     const data = JSON.parse(stored);
 
-    if (
-      data.date !== currentDate ||
-      normalizePregnancyWeek(data.pregnancyWeek) !== currentWeek
-    ) {
+    // Only reset when the calendar day changes.
+    if (data.date !== currentDate) {
       return createEmptyCareState(currentWeek);
     }
 
     return {
       date: currentDate,
-      pregnancyWeek: currentWeek,
+      pregnancyWeek: currentWeek ?? normalizePregnancyWeek(data.pregnancyWeek),
       completed:
         data.completed && typeof data.completed === "object"
           ? data.completed
@@ -62,6 +60,7 @@ export function getTodayCare(pregnancyWeek) {
     return createEmptyCareState(currentWeek);
   }
 }
+
 
 export function saveTodayCare(completed, pregnancyWeek) {
   const currentWeek = normalizePregnancyWeek(pregnancyWeek);

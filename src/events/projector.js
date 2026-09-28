@@ -59,13 +59,14 @@ export function projectHealthEvents(events, targetDate = null) {
     }
 
     if (event.type === "blood_pressure_logged") {
-      // Keep track of the latest blood pressure reading
-      latestBloodPressure = {
-        systolic: event.payload?.systolic ?? null,
-        diastolic: event.payload?.diastolic ?? null,
-        status: event.payload?.status || "Normal",
-        createdAt: event.createdAt,
-      };
+      if (eventDate === activeDate) {
+        latestBloodPressure = {
+          systolic: event.payload?.systolic ?? null,
+          diastolic: event.payload?.diastolic ?? null,
+          status: event.payload?.status || "Normal",
+          createdAt: event.createdAt,
+        };
+      }
     }
   }
 
@@ -81,4 +82,4 @@ export function projectHealthEvents(events, targetDate = null) {
     walking,
     bloodPressure: latestBloodPressure,
   };
-}
+}
