@@ -339,17 +339,16 @@ body {
   position: relative;
 }
 
+.health-stat-row {
+  border-bottom: 1px solid #f3eff6;
+}
+
 .health-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 6px;
-  border-bottom: 1px solid #f3eff6;
   transition: background 0.12s ease;
-}
-
-.health-item:last-child {
-  border-bottom: none;
 }
 
 .health-label {
@@ -426,17 +425,12 @@ body {
   border-color: #7c3aed;
 }
 
-.health-divider {
-  margin: 18px 0;
-  border: none;
-  border-top: 1px solid #f0eaf4;
-}
-
 /* ================= 7. SYMPTOMS SECTION ================= */
 
 .symptom-section {
   display: flex;
   flex-direction: column;
+  margin-top: 14px;
 }
 
 .symptom-header {

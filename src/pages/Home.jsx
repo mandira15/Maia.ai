@@ -50,43 +50,87 @@ function formatRemainingWater(amountMilliliters) {
 
 /**
  * Calculates pregnancy timeline progression.
- * If user has an explicit timeline anchor (pregnancyWeekRecordedAt or anchorDate),
- * progression is calculated dynamically from the anchor date.
- * If only pregnancyWeek is present, preserves the user's recorded week without inventing dates.
+ * Explicitly supports:
+ * - LMP (Last Menstrual Period): current gestational age is days since LMP.
+ * - EDD (Estimated Due Date): standard pregnancy is 280 days; current days = 280 - (EDD - today).
+ * - pregnancyWeekRecordedAt / anchorDate / pregnancyStartDate: progression advances from recorded date.
+ *
+ * CRITICAL RULE:
+ * Never calculate pregnancy progression from user.createdAt or user.lastUpdated.
+ * If the user only has pregnancyWeek and no valid timeline anchor, preserve the stored pregnancyWeek
+ * and currentDay = 1 without inventing a date.
  */
 function calculatePregnancyInfo(user) {
   const rawWeek = Number(user?.pregnancyWeek);
   const baseWeek = Number.isFinite(rawWeek) && rawWeek >= 1 && rawWeek <= 42 ? rawWeek : 1;
 
-  const anchorTimestamp = user?.pregnancyWeekRecordedAt || user?.anchorDate;
-  if (!anchorTimestamp) {
-    return {
-      currentWeek: baseWeek,
-      currentDay: 1,
-      hasTimelineAnchor: false,
-    };
-  }
-
-  const anchorTime = new Date(anchorTimestamp).getTime();
-  if (Number.isNaN(anchorTime)) {
-    return {
-      currentWeek: baseWeek,
-      currentDay: 1,
-      hasTimelineAnchor: false,
-    };
-  }
+  const lmpVal = user?.lmp || user?.lmpDate || user?.lastMenstrualPeriod;
+  const eddVal = user?.edd || user?.dueDate || user?.estimatedDueDate;
+  const anchorVal = user?.pregnancyWeekRecordedAt || user?.anchorDate || user?.pregnancyStartDate;
 
   const now = Date.now();
-  const diffDays = Math.max(0, Math.floor((now - anchorTime) / (1000 * 60 * 60 * 24)));
-  const additionalWeeks = Math.floor(diffDays / 7);
-  const dayInWeek = (diffDays % 7) + 1;
 
-  const calculatedWeek = Math.min(42, Math.max(1, baseWeek + additionalWeeks));
+  // 1. Check LMP Anchor
+  if (lmpVal) {
+    const lmpTime = new Date(lmpVal).getTime();
+    if (!Number.isNaN(lmpTime)) {
+      const diffDays = Math.floor((now - lmpTime) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 0 && diffDays <= 300) {
+        const week = Math.min(42, Math.max(1, Math.floor(diffDays / 7) + 1));
+        const day = (diffDays % 7) + 1;
+        return {
+          currentWeek: week,
+          currentDay: day,
+          hasTimelineAnchor: true,
+          anchorType: "LMP",
+        };
+      }
+    }
+  }
 
+  // 2. Check EDD Anchor
+  if (eddVal) {
+    const eddTime = new Date(eddVal).getTime();
+    if (!Number.isNaN(eddTime)) {
+      const remainingDays = Math.floor((eddTime - now) / (1000 * 60 * 60 * 24));
+      const elapsedDays = 280 - remainingDays;
+      if (elapsedDays >= 0 && elapsedDays <= 300) {
+        const week = Math.min(42, Math.max(1, Math.floor(elapsedDays / 7) + 1));
+        const day = (elapsedDays % 7) + 1;
+        return {
+          currentWeek: week,
+          currentDay: day,
+          hasTimelineAnchor: true,
+          anchorType: "EDD",
+        };
+      }
+    }
+  }
+
+  // 3. Check pregnancyWeekRecordedAt / anchorDate Anchor
+  if (anchorVal) {
+    const anchorTime = new Date(anchorVal).getTime();
+    if (!Number.isNaN(anchorTime)) {
+      const diffDays = Math.max(0, Math.floor((now - anchorTime) / (1000 * 60 * 60 * 24)));
+      const additionalWeeks = Math.floor(diffDays / 7);
+      const dayInWeek = (diffDays % 7) + 1;
+      const calculatedWeek = Math.min(42, Math.max(1, baseWeek + additionalWeeks));
+      return {
+        currentWeek: calculatedWeek,
+        currentDay: dayInWeek,
+        hasTimelineAnchor: true,
+        anchorType: "recordedAt",
+      };
+    }
+  }
+
+  // 4. Default: User has stored pregnancyWeek and no valid timeline anchor
+  // Preserve stored pregnancyWeek without fabricating progression
   return {
-    currentWeek: calculatedWeek,
-    currentDay: dayInWeek,
-    hasTimelineAnchor: true,
+    currentWeek: baseWeek,
+    currentDay: 1,
+    hasTimelineAnchor: false,
+    anchorType: null,
   };
 }
 
@@ -119,6 +163,7 @@ function getReferenceWeekData(weekNumber) {
 
   return { data: closest, isExact: false };
 }
+
 
 /**
  * Builds dynamic Today's Care tasks reflecting current health values and week tips.
@@ -269,14 +314,12 @@ function Home() {
   useEffect(() => {
     function loadCareState() {
       const todayCare = getTodayCare(currentWeek);
-      setCareTasks((prev) => ({
-        ...todayCare.completed,
-        ...prev,
-      }));
+      setCareTasks(todayCare.completed || {});
     }
 
     loadCareState();
   }, [currentWeek]);
+
 
 
   // 💧 Water event handler
@@ -318,7 +361,11 @@ function Home() {
   }, [currentWeekData, water, sleep, walking, symptoms]);
 
   // 📊 Pregnancy progress percentage
-  const progress = Math.min(100, Math.round((currentWeek / 40) * 100));
+  // If timeline anchor is present, include the days elapsed for accurate daily progression
+  const totalDays = pregnancyInfo.hasTimelineAnchor
+    ? (currentWeek - 1) * 7 + currentDay
+    : currentWeek * 7;
+  const progress = Math.min(100, Math.max(1, Math.round((totalDays / 280) * 100)));
 
   const waterTargetL = currentWeekData ? getWaterTargetLiters(currentWeekData.waterIntake) : 3.0;
   const sleepTargetHours = currentWeekData ? getSleepTargetHours(currentWeekData.sleepHours) : DEFAULT_SLEEP_GOAL_HOURS;
@@ -429,7 +476,7 @@ function Home() {
           </div>
 
           {/* WATER */}
-          <div className="health-item-wrapper">
+          <div className="health-item-wrapper health-stat-row">
             <div className="health-item">
               <span className="health-label">💧 Water</span>
 
@@ -459,7 +506,7 @@ function Home() {
           </div>
 
           {/* SLEEP */}
-          <div className="health-item">
+          <div className="health-item health-stat-row">
             <span className="health-label">😴 Sleep</span>
 
             <div className="health-right">
@@ -479,7 +526,7 @@ function Home() {
           </div>
 
           {/* WALKING */}
-          <div className="health-item">
+          <div className="health-item health-stat-row">
             <span className="health-label">🚶 Walking</span>
 
             <div className="health-right">
@@ -499,7 +546,7 @@ function Home() {
           </div>
 
           {/* BLOOD PRESSURE */}
-          <div className="health-item">
+          <div className="health-item health-stat-row">
             <span className="health-label">❤️ Blood Pressure</span>
 
             <div className="health-right">
@@ -521,8 +568,6 @@ function Home() {
               </button>
             </div>
           </div>
-
-          <hr className="health-divider" />
 
           {/* ================= SYMPTOMS ================= */}
           <div className="symptom-section">
