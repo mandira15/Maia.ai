@@ -693,8 +693,9 @@ body {
 /* ================= 9. EMERGENCY ================= */
 
 .emergency {
-  border-color: #fee2e2;
-  background: #fffbfb;
+  background: #ffffff !important;
+  border: 1px solid #fecaca;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .emergency h3 {
@@ -747,7 +748,334 @@ body {
   transform: translateY(-1px);
 }
 
+.emergency-safety-msg {
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: #991b1b;
+  line-height: 1.4;
+  background: #fee2e2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border-left: 3px solid #ef4444;
+}
+
+/* ================= SOS MODAL ================= */
+
+.sos-modal {
+  border-top: 4px solid #ef4444;
+}
+
+.sos-modal-desc {
+  font-size: 0.92rem;
+  color: #4b5563;
+  margin: -4px 0 6px;
+  line-height: 1.45;
+}
+
+.sos-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sos-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.sos-police-btn {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.sos-police-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+  transform: translateY(-1px);
+}
+
+.sos-ambulance-btn {
+  background: #fff7ed;
+  border-color: #ffedd5;
+  color: #9a3412;
+}
+
+.sos-ambulance-btn:hover {
+  background: #ffedd5;
+  border-color: #fb923c;
+  transform: translateY(-1px);
+}
+
+.sos-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.sos-btn-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.sos-btn-content strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sos-btn-content span {
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+/* ================= DOCTOR MODAL ================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(65, 12, 18, 0.48);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.doctor-modal,
+.emergency-action-modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.5);
+  animation: fadeInModal 0.2s ease-out;
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.doctor-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f3eff6;
+  padding-bottom: 12px;
+}
+
+.doctor-modal-header h3 {
+  font-size: 1.2rem;
+  color: #1f2937;
+  font-weight: 700;
+  margin: 0;
+}
+
+.doctor-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.doctor-close-btn:hover {
+  color: #374151;
+}
+
+.doctor-details-card {
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doctor-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.92rem;
+}
+
+.doctor-detail-label {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.doctor-detail-value {
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.doctor-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.doctor-call-btn {
+  flex: 2;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.doctor-call-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.doctor-edit-btn {
+  flex: 1;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  padding: 11px 12px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.doctor-edit-btn:hover {
+  background: #e5e7eb;
+}
+
+.doctor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.doctor-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doctor-form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.doctor-form-group input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.doctor-form-group input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.doctor-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+  width: 100%;
+}
+
+.doctor-save-btn {
+  flex: 2;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 12px 18px !important;
+  border-radius: 10px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.doctor-save-btn:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.doctor-save-btn:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+  box-shadow: none;
+}
+
+.doctor-cancel-btn {
+  flex: 1;
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+  padding: 12px 16px !important;
+  border-radius: 10px !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.doctor-cancel-btn:hover {
+  background: #e5e7eb !important;
+}
+
 /* ================= 10. RESPONSIVE ================= */
+
 
 @media (max-width: 900px) {
   .home-container {

@@ -1,7 +1,9 @@
 import "./Home.css";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUser } from "../services/cacheService";
+import api from "../api/api";
+import { getUser, saveUser } from "../services/cacheService";
+
 import pregnancyWeeks from "../data/pregnancyWeeks.json";
 import ChatBox from "../components/ChatBox/chatBox";
 import HealthLogger from "../components/HealthLogger/HealthLogger";
@@ -276,8 +278,28 @@ function Home() {
     }
   });
 
+  const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [showAddDoctorModal, setShowAddDoctorModal] = useState(false);
+  const [doctorForm, setDoctorForm] = useState({
+    name: "",
+    phoneNumber: "",
+    clinicName: "",
+  });
+  const [savingDoctor, setSavingDoctor] = useState(false);
+
+  // 🚨 SOS and Emergency Contact state
+  const [showSosModal, setShowSosModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showAddContactModal, setShowAddContactModal] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    phoneNumber: "",
+  });
+  const [savingContact, setSavingContact] = useState(false);
+
   // 🌐 Detect actual browser connectivity
   const isOnline = useOnlineStatus();
+
 
   async function refreshHealthData() {
     try {
@@ -314,6 +336,11 @@ function Home() {
             await refreshHealthData();
             const updatedCare = getTodayCare(currentUser?.pregnancyWeek);
             setCareTasks(updatedCare.completed || {});
+
+            const freshUser = await getUser();
+            if (freshUser) {
+              setUser(freshUser);
+            }
           }
         }
       } catch (err) {
@@ -336,6 +363,162 @@ function Home() {
     await clearAccountLocalData();
     navigate("/login");
   }
+
+  // Doctor Action Handlers
+  function handleDoctorClick() {
+    if (user?.doctor && user.doctor.phoneNumber) {
+      setShowDoctorModal(true);
+    } else {
+      setDoctorForm({
+        name: user?.doctor?.name || "",
+        phoneNumber: user?.doctor?.phoneNumber || "",
+        clinicName: user?.doctor?.clinicName || "",
+      });
+      setShowAddDoctorModal(true);
+    }
+  }
+
+  async function handleSaveDoctor(e) {
+    e.preventDefault();
+    if (!doctorForm.name.trim()) {
+      alert("Please enter doctor name");
+      return;
+    }
+    if (!doctorForm.phoneNumber.trim()) {
+      alert("Please enter doctor phone number");
+      return;
+    }
+
+    const doctorData = {
+      name: doctorForm.name.trim(),
+      phoneNumber: doctorForm.phoneNumber.trim(),
+      clinicName: doctorForm.clinicName.trim(),
+    };
+
+    setSavingDoctor(true);
+    try {
+      const updatedUser = {
+        ...user,
+        doctor: doctorData,
+      };
+
+      // 1. Save locally in IndexedDB
+      await saveUser(updatedUser);
+      setUser(updatedUser);
+
+      // 2. Sync to backend if token and online
+      const token = localStorage.getItem("token");
+      if (token && isOnline) {
+        await api.put("/dashboard/doctor", doctorData);
+      }
+
+      setShowAddDoctorModal(false);
+      setShowDoctorModal(true);
+    } catch (err) {
+      console.error("Failed to save doctor:", err);
+      alert(err.response?.data?.message || "Failed to save doctor details. Saved locally.");
+      setShowAddDoctorModal(false);
+    } finally {
+      setSavingDoctor(false);
+    }
+  }
+
+  function handleCallDoctor() {
+    if (user?.doctor?.phoneNumber) {
+      window.location.href = `tel:${user.doctor.phoneNumber}`;
+    }
+  }
+
+  // 🚨 Emergency Contact Helper to normalize string or object format
+  const emergencyContactData = useMemo(() => {
+    if (!user?.emergencyContact) return null;
+    if (typeof user.emergencyContact === "object") {
+      if (user.emergencyContact.phoneNumber) {
+        return {
+          name: user.emergencyContact.name || "Emergency Contact",
+          phoneNumber: user.emergencyContact.phoneNumber,
+        };
+      }
+      return null;
+    }
+    if (typeof user.emergencyContact === "string" && user.emergencyContact.trim()) {
+      return {
+        name: "Emergency Contact",
+        phoneNumber: user.emergencyContact.trim(),
+      };
+    }
+    return null;
+  }, [user?.emergencyContact]);
+
+  // 🚨 Emergency Contact Click Handler
+  function handleEmergencyContactClick() {
+    if (emergencyContactData?.phoneNumber) {
+      setShowContactModal(true);
+    } else {
+      setContactForm({
+        name: "",
+        phoneNumber: "",
+      });
+      setShowAddContactModal(true);
+    }
+  }
+
+  // 🚨 Save Emergency Contact Handler
+  async function handleSaveEmergencyContact(e) {
+    e.preventDefault();
+    if (!contactForm.name.trim()) {
+      alert("Please enter emergency contact name");
+      return;
+    }
+    if (!contactForm.phoneNumber.trim()) {
+      alert("Please enter emergency contact phone number");
+      return;
+    }
+
+    const contactPayload = {
+      name: contactForm.name.trim(),
+      phoneNumber: contactForm.phoneNumber.trim(),
+    };
+
+    setSavingContact(true);
+    try {
+      const updatedUser = {
+        ...user,
+        emergencyContact: contactPayload,
+      };
+
+      // 1. Save locally in IndexedDB cache for offline availability
+      await saveUser(updatedUser);
+      setUser(updatedUser);
+
+      // 2. Sync to backend or store in pending sync queue if offline
+      const token = localStorage.getItem("token");
+      if (token && isOnline) {
+        await api.put("/dashboard/emergency-contact", contactPayload);
+      } else {
+        localStorage.setItem("pendingEmergencyContactSync", JSON.stringify(contactPayload));
+      }
+
+      setShowAddContactModal(false);
+      setShowContactModal(true);
+    } catch (err) {
+      console.error("Failed to save emergency contact to backend:", err);
+      // Even if network fails, preserve locally
+      localStorage.setItem("pendingEmergencyContactSync", JSON.stringify(contactPayload));
+      alert(err.response?.data?.message || "Saved locally! Will sync when connection is restored.");
+      setShowAddContactModal(false);
+      setShowContactModal(true);
+    } finally {
+      setSavingContact(false);
+    }
+  }
+
+  function handleCallEmergencyContact() {
+    if (emergencyContactData?.phoneNumber) {
+      window.location.href = `tel:${emergencyContactData.phoneNumber}`;
+    }
+  }
+
 
   // Calculate current pregnancy timeline
   const pregnancyInfo = useMemo(() => calculatePregnancyInfo(user), [user]);
@@ -676,13 +859,328 @@ function Home() {
         <h3>🚨 Emergency</h3>
 
         <div className="emergency-buttons">
-          <button type="button">SOS</button>
-          <button type="button">Doctor</button>
-          <button type="button">Emergency Contact</button>
+          <button type="button" onClick={() => setShowSosModal(true)}>SOS</button>
+          <button type="button" onClick={handleDoctorClick}>Doctor</button>
+          <button type="button" onClick={handleEmergencyContactClick}>Emergency Contact</button>
         </div>
+
+        <p className="emergency-safety-msg">
+          If you are experiencing a medical emergency, seek immediate medical care or contact emergency services.
+        </p>
       </div>
 
+      {/* ================= VIEW DOCTOR MODAL ================= */}
+      {showDoctorModal && (
+        <div className="modal-overlay" onClick={() => setShowDoctorModal(false)}>
+          <div className="doctor-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="doctor-modal-header">
+              <h3>👩‍⚕️ Your Doctor</h3>
+              <button
+                type="button"
+                className="doctor-close-btn"
+                onClick={() => setShowDoctorModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="doctor-details-card">
+              <div className="doctor-detail-row">
+                <span className="doctor-detail-label">Name:</span>
+                <span className="doctor-detail-value">Dr. {user?.doctor?.name}</span>
+              </div>
+              <div className="doctor-detail-row">
+                <span className="doctor-detail-label">Phone:</span>
+                <span className="doctor-detail-value">{user?.doctor?.phoneNumber}</span>
+              </div>
+              {user?.doctor?.clinicName && (
+                <div className="doctor-detail-row">
+                  <span className="doctor-detail-label">Hospital / Clinic:</span>
+                  <span className="doctor-detail-value">{user.doctor.clinicName}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="doctor-modal-actions">
+              <button
+                type="button"
+                className="doctor-call-btn"
+                onClick={handleCallDoctor}
+              >
+                📞 Call Doctor
+              </button>
+              <button
+                type="button"
+                className="doctor-edit-btn"
+                onClick={() => {
+                  setDoctorForm({
+                    name: user?.doctor?.name || "",
+                    phoneNumber: user?.doctor?.phoneNumber || "",
+                    clinicName: user?.doctor?.clinicName || "",
+                  });
+                  setShowDoctorModal(false);
+                  setShowAddDoctorModal(true);
+                }}
+              >
+                ✏️ Edit Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= ADD / EDIT DOCTOR MODAL ================= */}
+      {showAddDoctorModal && (
+        <div className="modal-overlay" onClick={() => setShowAddDoctorModal(false)}>
+          <div className="doctor-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="doctor-modal-header">
+              <h3>{user?.doctor?.phoneNumber ? "✏️ Edit Doctor" : "👩‍⚕️ Add Doctor"}</h3>
+              <button
+                type="button"
+                className="doctor-close-btn"
+                onClick={() => setShowAddDoctorModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveDoctor} className="doctor-form">
+              <div className="doctor-form-group">
+                <label>Doctor Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Dr. Priya Sharma"
+                  value={doctorForm.name}
+                  onChange={(e) =>
+                    setDoctorForm({ ...doctorForm, name: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="doctor-form-group">
+                <label>Doctor Phone Number *</label>
+                <input
+                  type="tel"
+                  placeholder="e.g. 9876543210"
+                  value={doctorForm.phoneNumber}
+                  onChange={(e) =>
+                    setDoctorForm({ ...doctorForm, phoneNumber: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="doctor-form-group">
+                <label>Hospital / Clinic Name (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. City Maternity Hospital"
+                  value={doctorForm.clinicName}
+                  onChange={(e) =>
+                    setDoctorForm({ ...doctorForm, clinicName: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="doctor-modal-actions">
+                <button
+                  type="submit"
+                  className="doctor-save-btn"
+                  disabled={savingDoctor}
+                >
+                  {savingDoctor ? "Saving..." : "Save Doctor"}
+                </button>
+                <button
+                  type="button"
+                  className="doctor-cancel-btn"
+                  onClick={() => setShowAddDoctorModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= SOS CONFIRMATION MODAL ================= */}
+      {showSosModal && (
+        <div className="modal-overlay" onClick={() => setShowSosModal(false)}>
+          <div className="doctor-modal emergency-action-modal sos-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="doctor-modal-header">
+              <h3>🚨 Emergency Services</h3>
+              <button
+                type="button"
+                className="doctor-close-btn"
+                onClick={() => setShowSosModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="sos-modal-desc">
+              Choose an emergency service to dial immediately from your phone:
+            </p>
+
+            <div className="sos-options-list">
+              <a
+                href="tel:112"
+                className="sos-action-btn sos-police-btn"
+                onClick={() => setShowSosModal(false)}
+              >
+                <span className="sos-icon">🚨</span>
+                <div className="sos-btn-content">
+                  <strong>Call Emergency Services</strong>
+                  <span>Dial 112 (National Emergency Helpline)</span>
+                </div>
+              </a>
+
+              <a
+                href="tel:108"
+                className="sos-action-btn sos-ambulance-btn"
+                onClick={() => setShowSosModal(false)}
+              >
+                <span className="sos-icon">🚑</span>
+                <div className="sos-btn-content">
+                  <strong>Call Ambulance</strong>
+                  <span>Dial 108 (Disaster & Medical Ambulance)</span>
+                </div>
+              </a>
+            </div>
+
+            <div className="doctor-modal-actions" style={{ marginTop: "12px" }}>
+              <button
+                type="button"
+                className="doctor-cancel-btn"
+                style={{ flex: "1", width: "100%" }}
+                onClick={() => setShowSosModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= VIEW EMERGENCY CONTACT MODAL ================= */}
+      {showContactModal && emergencyContactData && (
+        <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
+          <div className="doctor-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="doctor-modal-header">
+              <h3>🛡️ Emergency Contact</h3>
+              <button
+                type="button"
+                className="doctor-close-btn"
+                onClick={() => setShowContactModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="doctor-details-card">
+              <div className="doctor-detail-row">
+                <span className="doctor-detail-label">Name:</span>
+                <span className="doctor-detail-value">{emergencyContactData.name}</span>
+              </div>
+              <div className="doctor-detail-row">
+                <span className="doctor-detail-label">Phone:</span>
+                <span className="doctor-detail-value">{emergencyContactData.phoneNumber}</span>
+              </div>
+            </div>
+
+            <div className="doctor-modal-actions">
+              <button
+                type="button"
+                className="doctor-call-btn"
+                onClick={handleCallEmergencyContact}
+              >
+                📞 Call Contact
+              </button>
+              <button
+                type="button"
+                className="doctor-edit-btn"
+                onClick={() => {
+                  setContactForm({
+                    name: emergencyContactData.name || "",
+                    phoneNumber: emergencyContactData.phoneNumber || "",
+                  });
+                  setShowContactModal(false);
+                  setShowAddContactModal(true);
+                }}
+              >
+                ✏️ Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= ADD / EDIT EMERGENCY CONTACT MODAL ================= */}
+      {showAddContactModal && (
+        <div className="modal-overlay" onClick={() => setShowAddContactModal(false)}>
+          <div className="doctor-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="doctor-modal-header">
+              <h3>{emergencyContactData?.phoneNumber ? "✏️ Edit Emergency Contact" : "🛡️ Add Emergency Contact"}</h3>
+              <button
+                type="button"
+                className="doctor-close-btn"
+                onClick={() => setShowAddContactModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEmergencyContact} className="doctor-form">
+              <div className="doctor-form-group">
+                <label>Contact Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Husband / Mother / Relative"
+                  value={contactForm.name}
+                  onChange={(e) =>
+                    setContactForm({ ...contactForm, name: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="doctor-form-group">
+                <label>Phone Number *</label>
+                <input
+                  type="tel"
+                  placeholder="e.g. 9876543210"
+                  value={contactForm.phoneNumber}
+                  onChange={(e) =>
+                    setContactForm({ ...contactForm, phoneNumber: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="doctor-modal-actions">
+                <button
+                  type="submit"
+                  className="doctor-save-btn"
+                  disabled={savingContact}
+                >
+                  {savingContact ? "Saving..." : "Save Contact"}
+                </button>
+                <button
+                  type="button"
+                  className="doctor-cancel-btn"
+                  onClick={() => setShowAddContactModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ================= HEALTH LOGGER ================= */}
+
       <HealthLogger
         open={showLogger}
         onClose={closeHealthLogger}

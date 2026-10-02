@@ -2,7 +2,8 @@ import api from "../api/api";
 import { isOnline } from "./networkService";
 import { getHealthEvents, saveHealthEvent, clearHealthEvents } from "../events/eventStore";
 import { getTodayCare, saveTodayCare, getTodayCareState, setTodayCareFromSync, clearTodayCareState } from "./careService";
-import { clearUser } from "./cacheService";
+import { clearUser, getUser, saveUser } from "./cacheService";
+
 
 function getTodayKey() {
   const today = new Date();
@@ -36,6 +37,29 @@ export async function syncLocalDataToBackend() {
         pregnancyWeek: currentCare.pregnancyWeek,
         completed: currentCare.completed,
       });
+    }
+
+    // 3. Sync offline pending emergency contact or doctor changes
+    const pending = localStorage.getItem("pendingEmergencyContactSync");
+    if (pending) {
+      try {
+        const contactData = JSON.parse(pending);
+        await api.put("/dashboard/emergency-contact", contactData);
+        localStorage.removeItem("pendingEmergencyContactSync");
+      } catch (e) {
+        console.warn("⚠️ Failed syncing pending emergency contact:", e);
+      }
+    }
+
+    const pendingDoctor = localStorage.getItem("pendingDoctorSync");
+    if (pendingDoctor) {
+      try {
+        const doctorData = JSON.parse(pendingDoctor);
+        await api.put("/dashboard/doctor", doctorData);
+        localStorage.removeItem("pendingDoctorSync");
+      } catch (e) {
+        console.warn("⚠️ Failed syncing pending doctor:", e);
+      }
     }
   } catch (err) {
     console.warn("⚠️ Background sync to backend failed:", err?.message || err);
@@ -75,15 +99,31 @@ export async function restoreAccountDashboardData(pregnancyWeek = null) {
         setTodayCareFromSync(todayCare);
       }
 
+      // 3. Populate Doctor and Emergency Contact in cached user profile if present
+      const cachedUser = await getUser();
+      if (cachedUser) {
+        const updated = { ...cachedUser };
+        if (res.data.doctor !== undefined) {
+          updated.doctor = res.data.doctor;
+        }
+        if (res.data.emergencyContact !== undefined) {
+          updated.emergencyContact = res.data.emergencyContact;
+        }
+        await saveUser(updated);
+      }
+
       return {
         restored: true,
         eventsCount: healthEvents?.length || 0,
         careRestored: !!(todayCare && todayCare.date === today),
+        doctor: res.data.doctor || null,
+        emergencyContact: res.data.emergencyContact || null,
       };
     }
   } catch (err) {
     console.warn("⚠️ Could not restore account dashboard data from backend:", err?.message || err);
   }
+
 
   return { restored: false, reason: "request_failed" };
 }
@@ -99,6 +139,8 @@ export async function clearAccountLocalData() {
     localStorage.removeItem("token");
     localStorage.removeItem("currentUserPhone");
     localStorage.removeItem("currentUserId");
+    localStorage.removeItem("pendingEmergencyContactSync");
+    localStorage.removeItem("pendingDoctorSync");
   } catch (err) {
     console.error("Failed to clear local account data:", err);
   }
