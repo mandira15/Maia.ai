@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../api/api";
 import { saveUser } from "../services/cacheService";
+import { restoreAccountDashboardData, clearAccountLocalData } from "../services/syncService";
 
 function Login() {
 
@@ -31,17 +32,30 @@ function Login() {
                 password: formData.password
             });
 
-            localStorage.setItem(
-                "token",
-                response.data.token
-            );
+            const newToken = response.data.token;
+            const loggedInUser = response.data.user;
+            const previousPhone = localStorage.getItem("currentUserPhone");
 
-            if (response.data.user) {
+            // If a different user was logged in previously on this device, clear local account cache
+            if (previousPhone && previousPhone !== formData.phoneNumber) {
+                await clearAccountLocalData();
+            }
+
+            localStorage.setItem("token", newToken);
+            localStorage.setItem("currentUserPhone", formData.phoneNumber);
+            if (loggedInUser?.id) {
+                localStorage.setItem("currentUserId", String(loggedInUser.id));
+            }
+
+            if (loggedInUser) {
                 await saveUser({
-                    ...response.data.user,
+                    ...loggedInUser,
                     pregnancyWeekRecordedAt: Date.now(),
                 });
             }
+
+            // Restore account data from backend for this user
+            await restoreAccountDashboardData(loggedInUser?.pregnancyWeek);
 
             alert(response.data.message);
 
@@ -55,6 +69,7 @@ function Login() {
             );
 
         }
+
 
     };
 

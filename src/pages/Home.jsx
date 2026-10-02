@@ -1,5 +1,6 @@
 import "./Home.css";
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { getUser } from "../services/cacheService";
 import pregnancyWeeks from "../data/pregnancyWeeks.json";
 import ChatBox from "../components/ChatBox/chatBox";
@@ -9,6 +10,12 @@ import { projectHealthEvents } from "../events/projector";
 import { createWaterLoggedEvent } from "../events/healthEvents";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { getTodayCare, saveTodayCare } from "../services/careService";
+import {
+  restoreAccountDashboardData,
+  syncLocalDataToBackend,
+  clearAccountLocalData,
+} from "../services/syncService";
+
 
 const DEFAULT_WATER_GOAL_ML = 3000;
 const DEFAULT_SLEEP_GOAL_HOURS = 8;
@@ -250,6 +257,7 @@ function buildCareTasks(currentWeekData, water, sleep, walking, symptoms) {
 }
 
 function Home() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [showLogger, setShowLogger] = useState(false);
   const [loggerMode, setLoggerMode] = useState("symptom");
@@ -286,20 +294,48 @@ function Home() {
     }
   }
 
-  // Initialize user and health data
+  // Initialize user and health data with account sync
   useEffect(() => {
     async function initialize() {
       try {
         const currentUser = await getUser();
         setUser(currentUser);
+
+        // First render from local storage / IndexedDB
         await refreshHealthData();
+        const initialCare = getTodayCare(currentUser?.pregnancyWeek);
+        setCareTasks(initialCare.completed || {});
+
+        // If online and authenticated, restore account data from backend
+        const token = localStorage.getItem("token");
+        if (token && isOnline) {
+          const res = await restoreAccountDashboardData(currentUser?.pregnancyWeek);
+          if (res.restored) {
+            await refreshHealthData();
+            const updatedCare = getTodayCare(currentUser?.pregnancyWeek);
+            setCareTasks(updatedCare.completed || {});
+          }
+        }
       } catch (err) {
         console.error("Initialize Error:", err);
       }
     }
 
     initialize();
-  }, []);
+  }, [isOnline]);
+
+  // Sync queued local data when reconnecting online
+  useEffect(() => {
+    if (isOnline) {
+      syncLocalDataToBackend();
+    }
+  }, [isOnline]);
+
+  // Handle Logout
+  async function handleLogout() {
+    await clearAccountLocalData();
+    navigate("/login");
+  }
 
   // Calculate current pregnancy timeline
   const pregnancyInfo = useMemo(() => calculatePregnancyInfo(user), [user]);
@@ -390,12 +426,24 @@ function Home() {
             </p>
           </div>
 
-          {/* 🌐 REAL CONNECTIVITY STATUS */}
-          <div className={`status-badge ${isOnline ? "online" : "offline"}`}>
-            <span className="status-dot" />
-            <span className="status-label">{isOnline ? "Online Mode" : "Offline Mode"}</span>
+          <div className="hero-actions">
+            {/* 🌐 REAL CONNECTIVITY STATUS */}
+            <div className={`status-badge ${isOnline ? "online" : "offline"}`}>
+              <span className="status-dot" />
+              <span className="status-label">{isOnline ? "Online Mode" : "Offline Mode"}</span>
+            </div>
+
+            <button
+              type="button"
+              className="hero-logout-btn"
+              onClick={handleLogout}
+              title="Logout from Maia"
+            >
+              Logout
+            </button>
           </div>
         </div>
+
 
         <div className="hero-progress-section">
           <div className="progress-bar">

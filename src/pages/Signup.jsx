@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import { saveUser } from "../services/cacheService";
+import { clearAccountLocalData } from "../services/syncService";
 
 function Signup() {
   const navigate = useNavigate();
@@ -43,11 +44,19 @@ function Signup() {
         password: formData.password,
       });
 
-      localStorage.setItem("token", response.data.token);
+      // Clear any leftover data from a previously logged in account
+      await clearAccountLocalData();
 
-      if (response.data.user) {
+      const createdUser = response.data.user;
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("currentUserPhone", formData.phoneNumber);
+      if (createdUser?.id) {
+        localStorage.setItem("currentUserId", String(createdUser.id));
+      }
+
+      if (createdUser) {
         await saveUser({
-          ...response.data.user,
+          ...createdUser,
           pregnancyWeekRecordedAt: Date.now(),
         });
       }
@@ -56,6 +65,7 @@ function Signup() {
     } catch (error) {
       alert(error.response?.data?.message || "Signup failed.");
     }
+
   };
 
   return (

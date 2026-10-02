@@ -18,6 +18,12 @@ export async function getUser() {
   return await db.get("user", "currentUser");
 }
 
+export async function clearUser() {
+  const db = await dbPromise;
+  await db.clear("user");
+}
+
+
 /* ===========================
    CHAT
 =========================== */
