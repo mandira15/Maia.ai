@@ -5,6 +5,7 @@ import api from "../api/api";
 import { getUser, saveUser } from "../services/cacheService";
 
 import pregnancyWeeks from "../data/pregnancyWeeks.json";
+import { STATIC_RESOURCES_DATA } from "../data/staticResources";
 import ChatBox from "../components/ChatBox/chatBox";
 import HealthLogger from "../components/HealthLogger/HealthLogger";
 import { saveHealthEvent, getHealthEvents } from "../events/eventStore";
@@ -296,6 +297,9 @@ function Home() {
     phoneNumber: "",
   });
   const [savingContact, setSavingContact] = useState(false);
+
+  // 📚 Resources Hub state
+  const [activeResource, setActiveResource] = useState(null);
 
   // 🌐 Detect actual browser connectivity
   const isOnline = useOnlineStatus();
@@ -869,6 +873,97 @@ function Home() {
         </p>
       </div>
 
+      {/* ================= RESOURCES HUB ================= */}
+      <div className="home-card resources-card-section">
+        <div className="card-header-with-badge">
+          <div>
+            <h3>📚 Pregnancy Resources Hub</h3>
+            <p className="card-subtitle">Verified educational guides & maternal safety tools (always available offline)</p>
+          </div>
+          <span className="resources-offline-badge">Offline Available</span>
+        </div>
+
+        <div className="resources-grid">
+          <button
+            type="button"
+            className="resource-item-btn"
+            onClick={() => setActiveResource("pregnancy-guide")}
+          >
+            <span className="resource-item-icon">📖</span>
+            <div className="resource-item-text">
+              <strong>Pregnancy Guide</strong>
+              <span>Week {currentWeek} baby, body & care tips</span>
+            </div>
+            <span className="resource-item-arrow">→</span>
+          </button>
+
+          <button
+            type="button"
+            className="resource-item-btn"
+            onClick={() => setActiveResource("warning-signs")}
+          >
+            <span className="resource-item-icon">⚠️</span>
+            <div className="resource-item-text">
+              <strong>Warning Signs</strong>
+              <span>Emergency, seek care & monitor</span>
+            </div>
+            <span className="resource-item-arrow">→</span>
+          </button>
+
+          <button
+            type="button"
+            className="resource-item-btn"
+            onClick={() => setActiveResource("nutrition")}
+          >
+            <span className="resource-item-icon">🥗</span>
+            <div className="resource-item-text">
+              <strong>Nutrition & Hydration</strong>
+              <span>Safe foods, fluids & precautions</span>
+            </div>
+            <span className="resource-item-arrow">→</span>
+          </button>
+
+          <button
+            type="button"
+            className="resource-item-btn"
+            onClick={() => setActiveResource("prenatal-care")}
+          >
+            <span className="resource-item-icon">🩺</span>
+            <div className="resource-item-text">
+              <strong>Prenatal Care</strong>
+              <span>Checkup tips & questions to ask</span>
+            </div>
+            <span className="resource-item-arrow">→</span>
+          </button>
+
+          <button
+            type="button"
+            className="resource-item-btn"
+            onClick={() => setActiveResource("mental-wellbeing")}
+          >
+            <span className="resource-item-icon">🧘‍♀️</span>
+            <div className="resource-item-text">
+              <strong>Mental Wellbeing</strong>
+              <span>Sleep, stress relief & emotional health</span>
+            </div>
+            <span className="resource-item-arrow">→</span>
+          </button>
+
+          <button
+            type="button"
+            className="resource-item-btn"
+            onClick={() => setActiveResource("emergency-resources")}
+          >
+            <span className="resource-item-icon">🚨</span>
+            <div className="resource-item-text">
+              <strong>Emergency Resources</strong>
+              <span>112, 108, doctor & contacts</span>
+            </div>
+            <span className="resource-item-arrow">→</span>
+          </button>
+        </div>
+      </div>
+
       {/* ================= VIEW DOCTOR MODAL ================= */}
       {showDoctorModal && (
         <div className="modal-overlay" onClick={() => setShowDoctorModal(false)}>
@@ -1175,6 +1270,340 @@ function Home() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= RESOURCE DETAIL MODAL ================= */}
+      {activeResource && (
+        <div className="modal-overlay" onClick={() => setActiveResource(null)}>
+          <div
+            className="doctor-modal resource-detail-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 1. PREGNANCY GUIDE */}
+            {activeResource === "pregnancy-guide" && (
+              <>
+                <div className="doctor-modal-header">
+                  <h3>📖 Week {currentWeek} Pregnancy Guide</h3>
+                  <button
+                    type="button"
+                    className="doctor-close-btn"
+                    onClick={() => setActiveResource(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="resource-detail-body">
+                  <div className="resource-week-banner">
+                    <span className="resource-tag-pill">
+                      Trimester {currentWeek <= 12 ? "1" : currentWeek <= 27 ? "2" : "3"}
+                    </span>
+                    <h4>Current Stage: Week {currentWeek} of 40</h4>
+                    <p className="resource-meta-text">
+                      Personalized to your pregnancy timeline • {!weekRef?.isExact ? `Reference Week: ${currentWeekData?.week}` : "Exact week match"}
+                    </p>
+                  </div>
+
+                  <div className="resource-card-block">
+                    <h5>👶 Baby's Development</h5>
+                    <p>{currentWeekData?.babyDevelopment || "Your baby is continuously developing vital organs, bones, and muscles."}</p>
+                  </div>
+
+                  <div className="resource-card-block">
+                    <h5>🤰 Changes in the Mother</h5>
+                    <p>{currentWeekData?.motherChanges || "Your body continues to adapt to support your growing baby."}</p>
+                  </div>
+
+                  {currentWeekData?.diet && currentWeekData.diet.length > 0 && (
+                    <div className="resource-card-block">
+                      <h5>🥗 Week Diet Suggestions</h5>
+                      <ul className="resource-bullet-list">
+                        {currentWeekData.diet.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {currentWeekData?.exercise && currentWeekData.exercise.length > 0 && (
+                    <div className="resource-card-block">
+                      <h5>🧘 Safe Movement & Exercise</h5>
+                      <ul className="resource-bullet-list">
+                        {currentWeekData.exercise.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {currentWeekData?.tips && currentWeekData.tips.length > 0 && (
+                    <div className="resource-card-block">
+                      <h5>💡 Care Tips For This Week</h5>
+                      <ul className="resource-bullet-list">
+                        {currentWeekData.tips.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="resource-guideline-note">
+                    ℹ️ Daily fluid target: ~{waterTargetL}L • Sleep target: ~{sleepTargetHours} hrs.
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* 2. WARNING SIGNS */}
+            {activeResource === "warning-signs" && (
+              <>
+                <div className="doctor-modal-header">
+                  <h3>⚠️ Warning Signs & Clinical Guidance</h3>
+                  <button
+                    type="button"
+                    className="doctor-close-btn"
+                    onClick={() => setActiveResource(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="resource-detail-body">
+                  <p className="resource-subtitle-note">
+                    Understanding what symptoms require immediate emergency care versus same-day clinical review.
+                  </p>
+
+                  {STATIC_RESOURCES_DATA.warningSigns.categories.map((cat) => (
+                    <div key={cat.level} className={`warning-tier-card tier-${cat.level}`}>
+                      <div className="tier-header" style={{ color: cat.color }}>
+                        <h4>{cat.title}</h4>
+                      </div>
+                      <p className="tier-action-box" style={{ background: cat.badgeBg, color: cat.color }}>
+                        <strong>Action:</strong> {cat.actionGuidance}
+                      </p>
+                      <div className="tier-signs-grid">
+                        {cat.signs.map((sign, idx) => (
+                          <div key={idx} className="tier-sign-item">
+                            <strong>• {sign.name}:</strong> <span>{sign.desc}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="resource-guideline-note">
+                    ⚠️ When in doubt, always contact your hospital triage line or local emergency services.
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* 3. NUTRITION & HYDRATION */}
+            {activeResource === "nutrition" && (
+              <>
+                <div className="doctor-modal-header">
+                  <h3>🥗 Nutrition & Hydration Guide</h3>
+                  <button
+                    type="button"
+                    className="doctor-close-btn"
+                    onClick={() => setActiveResource(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="resource-detail-body">
+                  {STATIC_RESOURCES_DATA.nutrition.sections.map((sec, idx) => (
+                    <div key={idx} className="resource-card-block">
+                      <h5>{sec.heading}</h5>
+                      <p>{sec.content}</p>
+                      {sec.tips && (
+                        <ul className="resource-bullet-list">
+                          {sec.tips.map((tip, tIdx) => (
+                            <li key={tIdx}>{tip}</li>
+                          ))}
+                        </ul>
+                      )}
+                      {sec.items && (
+                        <div className="nutrient-grid">
+                          {sec.items.map((item, nIdx) => (
+                            <div key={nIdx} className="nutrient-card">
+                              <strong>{item.nutrient}</strong>
+                              <p className="nutrient-why">{item.why}</p>
+                              <small className="nutrient-sources"><strong>Sources:</strong> {item.sources}</small>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div className="resource-guideline-note">
+                    🥗 Nutritional advice is educational. Always follow specific dietary guidance from your doctor or nutritionist.
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* 4. PRENATAL CARE */}
+            {activeResource === "prenatal-care" && (
+              <>
+                <div className="doctor-modal-header">
+                  <h3>🩺 Prenatal Care & Checkups</h3>
+                  <button
+                    type="button"
+                    className="doctor-close-btn"
+                    onClick={() => setActiveResource(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="resource-detail-body">
+                  {STATIC_RESOURCES_DATA.prenatalCare.sections.map((sec, idx) => (
+                    <div key={idx} className="resource-card-block">
+                      <h5>{sec.heading}</h5>
+                      <p>{sec.content}</p>
+                      {sec.tips && (
+                        <ul className="resource-bullet-list">
+                          {sec.tips.map((tip, tIdx) => (
+                            <li key={tIdx}>{tip}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                  <div className="resource-guideline-note">
+                    🩺 Never start, stop, or change prescribed medicines without direct consultation with your healthcare provider.
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* 5. MENTAL WELLBEING */}
+            {activeResource === "mental-wellbeing" && (
+              <>
+                <div className="doctor-modal-header">
+                  <h3>🧘‍♀️ Mental Wellbeing & Rest</h3>
+                  <button
+                    type="button"
+                    className="doctor-close-btn"
+                    onClick={() => setActiveResource(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="resource-detail-body">
+                  {STATIC_RESOURCES_DATA.mentalWellbeing.sections.map((sec, idx) => (
+                    <div key={idx} className="resource-card-block">
+                      <h5>{sec.heading}</h5>
+                      <p>{sec.content}</p>
+                      {sec.tips && (
+                        <ul className="resource-bullet-list">
+                          {sec.tips.map((tip, tIdx) => (
+                            <li key={tIdx}>{tip}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                  <div className="resource-guideline-note">
+                    💜 Taking care of your mental and emotional state is a vital part of prenatal health. Professional help is always valid and available.
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* 6. EMERGENCY RESOURCES */}
+            {activeResource === "emergency-resources" && (
+              <>
+                <div className="doctor-modal-header">
+                  <h3>🚨 Emergency Resources & Contacts</h3>
+                  <button
+                    type="button"
+                    className="doctor-close-btn"
+                    onClick={() => setActiveResource(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="resource-detail-body">
+                  <p className="resource-subtitle-note">
+                    Fast access to official emergency numbers and your account's saved contacts. Works completely offline.
+                  </p>
+
+                  <div className="emergency-resource-actions">
+                    <a href="tel:112" className="resource-call-tile tile-police">
+                      <span className="tile-icon">🚨</span>
+                      <div className="tile-info">
+                        <strong>112 — National Emergency</strong>
+                        <span>All-in-one emergency response service</span>
+                      </div>
+                      <span className="tile-dial">📞 Dial</span>
+                    </a>
+
+                    <a href="tel:108" className="resource-call-tile tile-ambulance">
+                      <span className="tile-icon">🚑</span>
+                      <div className="tile-info">
+                        <strong>108 — Medical Ambulance</strong>
+                        <span>Disaster & emergency obstetrics transport</span>
+                      </div>
+                      <span className="tile-dial">📞 Dial</span>
+                    </a>
+
+                    {user?.doctor?.phoneNumber ? (
+                      <a href={`tel:${user.doctor.phoneNumber}`} className="resource-call-tile tile-doctor">
+                        <span className="tile-icon">👩‍⚕️</span>
+                        <div className="tile-info">
+                          <strong>Dr. {user.doctor.name} (Your Doctor)</strong>
+                          <span>{user.doctor.clinicName || "Personal Clinician"} • {user.doctor.phoneNumber}</span>
+                        </div>
+                        <span className="tile-dial">📞 Call</span>
+                      </a>
+                    ) : (
+                      <div className="resource-card-block empty-contact-block">
+                        <strong>👩‍⚕️ Doctor Not Configured</strong>
+                        <p>You can add your doctor in the Emergency card on the dashboard.</p>
+                      </div>
+                    )}
+
+                    {emergencyContactData?.phoneNumber ? (
+                      <a href={`tel:${emergencyContactData.phoneNumber}`} className="resource-call-tile tile-contact">
+                        <span className="tile-icon">🛡️</span>
+                        <div className="tile-info">
+                          <strong>{emergencyContactData.name} (Emergency Contact)</strong>
+                          <span>Personal contact • {emergencyContactData.phoneNumber}</span>
+                        </div>
+                        <span className="tile-dial">📞 Call</span>
+                      </a>
+                    ) : (
+                      <div className="resource-card-block empty-contact-block">
+                        <strong>🛡️ Emergency Contact Not Configured</strong>
+                        <p>You can add your emergency contact in the Emergency card on the dashboard.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="resource-guideline-note">
+                    🚨 If experiencing acute bleeding, severe pain, or loss of consciousness, call 112/108 immediately.
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="doctor-modal-actions" style={{ marginTop: "16px" }}>
+              <button
+                type="button"
+                className="doctor-cancel-btn"
+                style={{ flex: 1, width: "100%" }}
+                onClick={() => setActiveResource(null)}
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -759,6 +759,372 @@ body {
   border-left: 3px solid #ef4444;
 }
 
+/* ================= 9B. RESOURCES HUB ================= */
+
+.resources-card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid #f0eaf4;
+}
+
+.resources-offline-badge {
+  background: #f3e8ff;
+  color: #7c3aed;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #e9d5ff;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.resource-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #faf7fb;
+  border: 1px solid #f1ecf6;
+  border-radius: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.resource-item-btn:hover {
+  background: #ffffff;
+  border-color: #a855f7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.1);
+}
+
+.resource-item-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.resource-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.resource-item-text strong {
+  font-size: 0.95rem;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.resource-item-text span {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.resource-item-arrow {
+  font-size: 1.1rem;
+  color: #9ca3af;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.resource-item-btn:hover .resource-item-arrow {
+  color: #7c3aed;
+  transform: translateX(3px);
+}
+
+/* ================= RESOURCE MODAL DETAILS ================= */
+
+.resource-detail-modal {
+  max-width: 540px !important;
+  max-height: 85vh !important;
+}
+
+.resource-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.resource-week-banner {
+  background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+  border: 1px solid #f0abfc;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resource-tag-pill {
+  align-self: flex-start;
+  background: #a855f7;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.resource-week-banner h4 {
+  font-size: 1.05rem;
+  color: #581c87;
+  font-weight: 700;
+  margin: 2px 0 0;
+}
+
+.resource-meta-text {
+  font-size: 0.8rem;
+  color: #7e22ce;
+  margin: 0;
+}
+
+.resource-card-block {
+  background: #faf7fb;
+  border: 1px solid #f1ecf6;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resource-card-block h5 {
+  font-size: 0.96rem;
+  color: #1f2937;
+  font-weight: 700;
+  margin: 0;
+}
+
+.resource-card-block p {
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.resource-bullet-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.resource-bullet-list li {
+  font-size: 0.88rem;
+  color: #374151;
+  line-height: 1.45;
+}
+
+.resource-guideline-note {
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.4;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid #9ca3af;
+}
+
+.resource-subtitle-note {
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Warning tier cards */
+.warning-tier-card {
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tier-emergency {
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+.tier-seek-care-soon {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.tier-monitor {
+  border-color: #a7f3d0;
+  background: #f0fdf4;
+}
+
+.tier-header h4 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tier-action-box {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.tier-signs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tier-sign-item {
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: #1f2937;
+}
+
+/* Nutrients Grid */
+.nutrient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.nutrient-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nutrient-card strong {
+  font-size: 0.9rem;
+  color: #1e3a8a;
+}
+
+.nutrient-why {
+  font-size: 0.82rem;
+  color: #4b5563;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.nutrient-sources {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Emergency Resource Actions */
+.emergency-resource-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resource-call-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.tile-police {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.tile-ambulance {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+.tile-doctor {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+
+.tile-contact {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.resource-call-tile:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.tile-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.tile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.tile-info strong {
+  font-size: 0.92rem;
+}
+
+.tile-info span {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+.tile-dial {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.empty-contact-block {
+  background: #f9fafb;
+  border-style: dashed;
+}
+
+.empty-contact-block strong {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.empty-contact-block p {
+  font-size: 0.82rem;
+  color: #9ca3af;
+}
+
 /* ================= SOS MODAL ================= */
 
 .sos-modal {
